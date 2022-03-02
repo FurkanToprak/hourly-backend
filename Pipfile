@@ -13,4 +13,4 @@ pipenv-setup = {extras = ["black"], version = "*"}
 python_version = "3.9"
 
 [scripts]
-start = "python3 app.py"
+start = "python3 -m flask run"
