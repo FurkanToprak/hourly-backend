@@ -8,7 +8,7 @@ flask = "*"
 gunicorn = "*"
 
 [dev-packages]
-pipenv-setup = {extras = ["black"], version = "*"}
+black = "*"
 
 [requires]
 python_version = "3.9"
