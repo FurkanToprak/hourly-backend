@@ -28,6 +28,6 @@ Add the following to settings.json:
   "python.testing.pytestEnabled": true,
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": true,
-  "python.linting.pylintArgs": ["--disable=C0114"]
+  "python.linting.pylintArgs": []
 }
 ```
