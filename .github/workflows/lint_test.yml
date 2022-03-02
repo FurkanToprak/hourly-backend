@@ -1,0 +1,30 @@
+# .github/workflows/test.yml
+
+name: Lint and Test
+
+on: [push, pull_request]
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies with pipenv
+        run: |
+          pip install pipenv
+          pipenv install --deploy --dev
+
+      - name: Run Black 
+        run: pipenv run black --check .
+
+      - name: Run Pylint
+        run: pipenv run pylint --fail-under=10 *.py **/*.py
+
+      - name: Run Tests
+        run: pipenv run pytest
