@@ -24,7 +24,7 @@ jobs:
         run: pipenv run black --check .
 
       - name: Run Pylint
-        run: pipenv run --fail-under=10 *.py **/*.py
+        run: pipenv run pylint --fail-under=10 *.py **/*.py
 
       - name: Run Tests
         run: pipenv run pytest
