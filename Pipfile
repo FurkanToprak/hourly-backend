@@ -5,9 +5,13 @@ name = "pypi"
 
 [packages]
 flask = "*"
+gunicorn = "*"
 
 [dev-packages]
-pipenv-setup = {extras = ["black"], version = "*"}
+black = "*"
+pytest = "*"
+pytest-cov = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.9"
