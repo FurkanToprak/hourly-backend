@@ -14,17 +14,27 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.9
-
-      - name: Install dependencies with pipenv
+      
+      - name: Install pipenv
         run: |
-          pip install pipenv
+          python -m pip install --upgrade pipenv wheel
+
+      - id: cache-pipenv
+        uses: actions/cache@v1
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
           pipenv install --deploy --dev
 
       - name: Run Black 
         run: pipenv run black --check .
 
       - name: Run Pylint
-        run: pipenv run pylint --fail-under=10 *.py **/*.py
+        run: pipenv run pylint *.py **/*.py
 
       - name: Run Tests
         run: pipenv run pytest
