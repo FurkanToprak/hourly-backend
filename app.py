@@ -15,13 +15,13 @@ def hello_world():
 def google_auth():
     """Verifies Google OAuth protocols"""
     payload = request.json
-    token = payload[token]
-    clientId = payload[clientId]
+    token = payload['token']
+    clientId = payload['clientId']
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), clientId)
         userid = idinfo['sub']
         print(userid)
-        return True
+        return 'Success'
     except ValueError:
         # Invalid token
-        return False
+        return 'Failure'
