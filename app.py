@@ -17,9 +17,9 @@ def google_auth():
     """Verifies Google OAuth protocols"""
     payload = request.json
     token = payload["token"]
-    clientId = payload["clientId"]
+    client_id = payload["clientId"]
     try:
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), clientId)
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), client_id)
         userid = idinfo["sub"]
         print(userid)
         return "Success"
