@@ -25,6 +25,6 @@ def google_auth():
         userid = idinfo["sub"]
         print(userid)
         return "Success"
-    except Exception as post_error:
+    except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
         return str(post_error)

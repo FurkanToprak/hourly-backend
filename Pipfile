@@ -9,6 +9,7 @@ gunicorn = "*"
 google-auth = "*"
 requests = "*"
 flask-cors = "*"
+pylint = "*"
 
 [dev-packages]
 black = "*"
