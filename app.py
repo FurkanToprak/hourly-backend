@@ -25,6 +25,6 @@ def google_auth():
         userid = idinfo["sub"]
         print(userid)
         return "Success"
-    except ValueError:
+    except Exception as e:
         # Invalid token
-        return "Failure"
+        return str(e)
