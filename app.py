@@ -2,8 +2,10 @@
 from flask import Flask, request
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from flask_cors import CORS
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 
 @app.route("/")
