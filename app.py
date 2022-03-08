@@ -21,7 +21,7 @@ def google_auth():
     token = payload["token"]
     client_id = payload["clientId"]
     try:
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), client_id)
+        idinfo = id_token.verify_oauth2_token(token, requests.Request())
         userid = idinfo["sub"]
         print(userid)
         return "Success"
