@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 flask = "*"
 gunicorn = "*"
+google-auth = "*"
+requests = "*"
 
 [dev-packages]
 black = "*"
