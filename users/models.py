@@ -1,11 +1,14 @@
-from flask import Flask, jsonify
+"""Schema for the Users"""
 
-class User: 
-  def signup(self):
-    user = {
-      "_id" : "",
-      "username": "",
-      "password": "",
-      "email" : "",
-    }
-    return jsonify(user), 200
+
+class User:
+    """Creating a user object"""
+
+    def structure(self):
+        """Creating a user object"""
+        user = {
+            "username": "",
+            "password": "",
+            "email": "",
+        }
+        return user

@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 flask = "*"
 gunicorn = "*"
+pymongo = "*"
+python-dotenv = "*"
+firebase-admin = "*"
 
 [dev-packages]
 black = "*"
