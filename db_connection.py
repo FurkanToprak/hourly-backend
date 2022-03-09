@@ -1,13 +1,10 @@
 """Database Connection"""
-import firebase_admin
 import os
+import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import credentials
 from firebase_admin import firestore
-from pathlib import Path
 
-# path = Path(".env")
-# if path.is_file():
 load_dotenv()
 
 cred = {

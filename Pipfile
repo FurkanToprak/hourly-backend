@@ -6,9 +6,12 @@ name = "pypi"
 [packages]
 flask = "*"
 gunicorn = "*"
-pymongo = "*"
 python-dotenv = "*"
 firebase-admin = "*"
+google-auth = "*"
+requests = "*"
+flask-cors = "*"
+pylint = "*"
 
 [dev-packages]
 black = "*"
@@ -21,3 +24,5 @@ python_version = "3.9"
 
 [scripts]
 start = "python3 -m flask run"
+clearport = "kill $(lsof -t -i:5000)"
+lint = "pipenv run black ."
