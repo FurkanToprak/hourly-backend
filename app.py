@@ -11,6 +11,7 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 @app.route("/")
 def hello_world():
     """Return Hello World"""
+    app.logger.info("Hello World Rendered")
     return "<p>Hello, World!</p>"
 
 
@@ -23,7 +24,7 @@ def google_auth():
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         userid = idinfo["sub"]
-        print(userid)
+        app.logger.info("User ID - ", userid)
         return "Success"
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
