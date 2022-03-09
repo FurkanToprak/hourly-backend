@@ -19,11 +19,12 @@ def google_auth():
     """Verifies Google OAuth protocols"""
     payload = request.json
     token = payload["token"]
-    # client_id = payload["clientId"]
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         userid = idinfo["sub"]
-        print(userid)
+        # TODO: check out what the payload stuff does from idinfo
+        # TODO: perhaps recieve user data from frontend.
+        # TODO: redirect to signup/login as needed
         return "Success"
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
