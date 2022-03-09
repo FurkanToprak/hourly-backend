@@ -28,10 +28,8 @@ def google_auth():
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         user_email = idinfo["email"]
-        # TODO: check out what the payload stuff does from idinfo
+
         return routes.login(user_email, user_name)
-        # TODO: perhaps recieve user data from frontend.
-        # TODO: redirect to signup/login as needed
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
         return str(post_error)
