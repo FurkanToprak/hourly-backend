@@ -4,6 +4,18 @@ name: Lint and Test
 
 on: [push, pull_request]
 
+env:
+  FLASK_TYPE: ${{ secrets.FLASK_TYPE }}
+  FLASK_PROJECT_ID: ${{ secrets.FLASK_PROJECT_ID }}
+  FLASK_PRIVATE_KEY_ID: ${{ secrets.FLASK_PRIVATE_KEY_ID }}
+  FLASK_PRIVATE_KEY: ${{ secrets.FLASK_PRIVATE_KEY }}
+  FLASK_CLIENT_EMAIL: ${{ secrets.FLASK_CLIENT_EMAIL }}
+  FLASK_CLIENT_ID: ${{ secrets.FLASK_CLIENT_ID }}
+  FLASK_AUTH_URI: ${{ secrets.FLASK_AUTH_URI }}
+  FLASK_TOKEN_URI: ${{ secrets.FLASK_TOKEN_URI }}
+  FLASK_AUTH_PROVIDER: ${{ secrets.FLASK_AUTH_PROVIDER }}
+  FLASK_CLIENT_CERT: ${{ secrets.FLASK_CLIENT_CERT }}
+
 jobs:
   suite:
     runs-on: ubuntu-latest
