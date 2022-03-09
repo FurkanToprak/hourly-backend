@@ -1,4 +1,3 @@
-# pylint: skip-file
 """Schema for the Users"""
 
 
