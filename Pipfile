@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 flask = "*"
 gunicorn = "*"
+firebase-admin = "*"
 google-auth = "*"
 requests = "*"
 flask-cors = "*"
