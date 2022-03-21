@@ -8,7 +8,8 @@ class Block:
         """item structure"""
         block = {
             "id": "",
-            "user_id": "",
+            "user_ids": [],
+            "task_id": "",
             "type": "",
             "name": "",
             "start_time": "",

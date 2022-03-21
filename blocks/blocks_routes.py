@@ -1,4 +1,4 @@
-""" Routes for tasks """
+""" Routes for blocks """
 from datetime import date
 from tasks.models import Task
 from db_connection import database

@@ -6,5 +6,5 @@ class User:
 
     def structure(self):
         """Creating a user object"""
-        user = {"name": "", "email": "", "id": ""}
+        user = {"name": "", "email": "", "id": "", "startOfDay": "", "endOfDay": ""}
         return user
