@@ -5,7 +5,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
 from users import user_routes
-from items import item_routes
+from tasks import tasks_routes
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -20,13 +20,21 @@ def login():
     return user_routes.login(payload["email"], payload["name"])
 
 
-# Routes for items
+# Routes for tasks
 
 
-@app.route("/items/createItem", methods=["POST"])
-def createItem():
+@app.route("/tasks/createTask", methods=["POST"])
+def create_task():
+    "Creating a task for a user"
     params = request.json
-    return item_routes.createItem(params)
+    return tasks_routes.create_task(params)
+
+
+@app.route("/tasks/getTasks", methods=["POST"])
+def get_task():
+    "Getting tasks with a user id"
+    params = request.json
+    return tasks_routes.get_task(params)
 
 
 # Routes for Authorization

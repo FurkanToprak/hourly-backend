@@ -1,18 +1,20 @@
 """Schema for Items"""
 
 
-class Item:
+class Task:
     """Class for Item objects"""
 
     def structure(self):
-        """item structure"""
-        Item = {
+        """task structure"""
+        Task = {
             "id": "",
             "user_id": "",
             "name": "",
-            "work_hours": "",
+            "estimated_time": "",
             "start_date": "",
+            "description": "",
             "due_date": "",
             "completed": "",
+            "label": "",
         }
-        return Item
+        return Task
