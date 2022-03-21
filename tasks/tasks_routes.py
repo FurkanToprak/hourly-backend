@@ -11,20 +11,12 @@ def create_task(params):
     tasks_id = tasks_doc.id
     task = Task().structure()
 
-    today = (
-        str(date.today().year)
-        + "-"
-        + str(date.today().month)
-        + "-"
-        + str(date.today().day)
-    )
-
     task["id"] = tasks_id
     task["user_id"] = params["id"]
     task["name"] = params["name"]
     task["label"] = params["label"]
     task["description"] = params["description"]
-    task["start_date"] = today
+    task["start_date"] = str(date.today())
     task["due_date"] = params["deadline"]
     task["estimated_time"] = params["estimatedTime"]
     task["completed"] = NOT_COMPLETED
