@@ -15,12 +15,12 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 @app.route("/tests/login", methods=["POST"])
 def login():
     """Testing login"""
-    payload = request.json
-    print(payload["email"], payload["name"])
-    return user_routes.login(payload["email"], payload["name"])
-
-
-# Routes for tasks
+    params = request.json
+    email = params["email"]
+    name = params["name"]
+    start_day = params["startOfDay"]
+    end_day = params["endOfDay"]
+    return user_routes.login(email, name, start_day, end_day)
 
 
 @app.route("/tasks/createTask", methods=["POST"])
@@ -37,20 +37,19 @@ def get_task():
     return tasks_routes.get_task(params)
 
 
-# Routes for Authorization
-
-
 @app.route("/google_auth", methods=["POST"])
 def google_auth():
     """Verifies Google OAuth protocols"""
-    payload = request.json
-    token = payload["token"]
-    user_name = payload["name"]
+    params = request.json
+    token = params["token"]
+    user_name = params["name"]
+    start_day = params["startOfDay"]
+    end_day = params["endOfDay"]
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         user_email = idinfo["email"]
 
-        return user_routes.login(user_email, user_name)
+        return user_routes.login(user_email, user_name, start_day, end_day)
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
         return str(post_error)
