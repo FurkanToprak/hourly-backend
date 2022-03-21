@@ -23,6 +23,24 @@ def login():
     return user_routes.login(email, name, start_day, end_day)
 
 
+@app.route("/users/getSleep", methods=["POST"])
+def get_sleep():
+    """Get Users Sleep Schedule"""
+    params = request.json
+    user_id = params["id"]
+    return user_routes.get_sleep(user_id)
+
+
+@app.route("/users/updateSleep", methods=["POST"])
+def update_sleep():
+    """Update Users Sleep Schedule"""
+    params = request.json
+    user_id = params["id"]
+    start_day = params["startOfDay"]
+    end_day = params["endOfDay"]
+    return user_routes.update_sleep(user_id, start_day, end_day)
+
+
 @app.route("/tasks/createTask", methods=["POST"])
 def create_task():
     "Creating a task for a user"

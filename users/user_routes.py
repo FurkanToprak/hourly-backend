@@ -33,10 +33,19 @@ def login(email, name, start_day, end_day):
 def get_sleep(user_id):
     """Return User's Sleep Time"""
     result = database.collection("users").where("id", "==", user_id).get()
-
     send = {}
     if result:
-        send["startOfDay"] = result[0]["startOfDay"]
-        send["endOfDay"] = result[0]["endOfDay"]
+        send["startOfDay"] = result[0].to_dict()["startOfDay"]
+        send["endOfDay"] = result[0].to_dict()["endOfDay"]
 
     return send
+
+
+def update_sleep(user_id, start_day, end_day):
+    """Return User's Sleep Time"""
+    result = database.collection("users").document(user_id)
+    if result.get().exists:
+        result.update({"startOfDay": start_day, "endOfDay": end_day})
+        return jsonify(success=True)
+
+    return jsonify(success=False)
