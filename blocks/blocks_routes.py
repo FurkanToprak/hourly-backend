@@ -34,6 +34,6 @@ def get_block(params):
     )
     send = {}
     if result:
-        for item in result:
-            send[item.to_dict()["id"]] = item.to_dict()
+        for i, item in enumerate(result):
+            send[i] = item.to_dict()
     return send
