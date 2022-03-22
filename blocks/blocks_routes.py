@@ -1,33 +1,37 @@
 """ Routes for blocks """
-from datetime import date
-from tasks.models import Task
+from blocks.models import Block
 from db_connection import database
 from constants import NOT_COMPLETED
 
 
-def create_task(params):
-    """Create the tasks"""
-    tasks_doc = database.collection("tasks").document()
-    tasks_id = tasks_doc.id
-    task = Task().structure()
+def create_block(params):
+    """Create the blocks"""
+    blocks_doc = database.collection("blocks").document()
+    blocks_id = blocks_doc.id
+    block = Block().structure()
 
-    task["id"] = tasks_id
-    task["user_id"] = params["id"]
-    task["name"] = params["name"]
-    task["label"] = params["label"]
-    task["description"] = params["description"]
-    task["start_date"] = str(date.today())
-    task["due_date"] = params["deadline"]
-    task["estimated_time"] = params["estimatedTime"]
-    task["completed"] = NOT_COMPLETED
+    block["id"] = blocks_id
+    block["user_ids"] = [params["user_id"]]
+    block["task_id"] = params["task_id"]
+    block["type"] = params["type"]
+    block["name"] = params["name"]
+    block["start_time"] = params["start_time"]
+    block["end_time"] = params["end_time"]
+    block["date"] = params["date"]
+    block["completed"] = NOT_COMPLETED
+    block["repeat"] = params["repeat"]
 
-    database.collection("tasks").add(task, tasks_id)
-    return "tasks Created"
+    database.collection("blocks").add(block, blocks_id)
+    return "Block Created"
 
 
-def get_task(params):
-    """Get a task"""
-    result = database.collection("tasks").where("user_id", "==", params["id"]).get()
+def get_block(params):
+    """Get blocks"""
+    result = (
+        database.collection("blocks")
+        .where("user_ids", "array_contains", params["id"])
+        .get()
+    )
     send = {}
     if result:
         for item in result:
