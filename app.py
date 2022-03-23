@@ -7,6 +7,7 @@ from flask_cors import CORS
 from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
+from events import events_routes
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -54,6 +55,20 @@ def get_task():
     "Getting tasks with a user id"
     params = request.json
     return tasks_routes.get_task(params)
+
+
+@app.route("/events/createEvent", methods=["POST"])
+def create_event():
+    "Create an event for a user"
+    params = request.json
+    return events_routes.create_event(params)
+
+
+@app.route("/events/getEvents", methods=["POST"])
+def get_events():
+    "Getting events with a user id"
+    params = request.json
+    return events_routes.get_events(params)
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])
