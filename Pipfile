@@ -11,11 +11,7 @@ google-auth = "*"
 requests = "*"
 flask-cors = "*"
 pylint = "*"
-<<<<<<< HEAD
-google = "*"
-=======
 python-dotenv = "*"
->>>>>>> main
 
 [dev-packages]
 black = "*"
