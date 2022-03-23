@@ -6,6 +6,7 @@ from google.auth.transport import requests
 from flask_cors import CORS
 from users import user_routes
 from tasks import tasks_routes
+from blocks import blocks_routes
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -53,6 +54,13 @@ def get_task():
     "Getting tasks with a user id"
     params = request.json
     return tasks_routes.get_task(params)
+
+
+@app.route("/blocks/getBlocks", methods=["POST"])
+def get_block():
+    "Getting blocks with a user id"
+    params = request.json
+    return blocks_routes.get_block(params)
 
 
 @app.route("/google_auth", methods=["POST"])

@@ -2,10 +2,10 @@
 
 
 class Block:
-    """Class for Item objects"""
+    """Class for Block objects"""
 
     def structure(self):
-        """item structure"""
+        """block structure"""
         block = {
             "id": "",
             "user_ids": [],
