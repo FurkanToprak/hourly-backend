@@ -6,7 +6,7 @@ class Task:
 
     def structure(self):
         """task structure"""
-        Task = {
+        task = {
             "id": "",
             "user_id": "",
             "name": "",
@@ -18,4 +18,4 @@ class Task:
             "completed": "",
             "label": "",
         }
-        return Task
+        return task
