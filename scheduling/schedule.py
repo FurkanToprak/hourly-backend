@@ -1,12 +1,13 @@
 from tasks import tasks_routes
 from users import user_routes
 import datetime
+import itertools
 from dateutil import parser
 
 # each time unit is 15 minutes
 TIME_UNIT = 30
 UNITS_PER_DAY = int((24 * 60 / TIME_UNIT)) * 2
-CURRENT_TIME = datetime.datetime.now()
+CURRENT_TIME = datetime.datetime.utcnow()
 
 
 class Schedule:
@@ -15,8 +16,7 @@ class Schedule:
         self.user_id = user_id
         self.tasks = []
         self.last_task = None
-        self.start_of_day = 0
-        self.end_of_day = 48
+        self.num_days = 0
         self.schedule_tasks()
 
     def generate_priority(self, estimated_time, completed_time, deadline) -> float:
@@ -30,13 +30,31 @@ class Schedule:
         self.last_task = parser.parse(
             max(self.tasks, key=lambda x: parser.parse(x["due_date"]))
         )
-        self.time_slots = (self.last_task - CURRENT_TIME).days * UNITS_PER_DAY * [None]
+
+        # self.time_slots = (self.last_task - CURRENT_TIME).days * UNITS_PER_DAY * [None]
+        self.num_days = (self.last_task - CURRENT_TIME).days
+
+        self.time_slots = {}
+        for i in range(self.num_days):
+            date = datetime.now().date() + datetime.timedelta(days=i)
+            self.time_slots[date] = UNITS_PER_DAY * [None]
+
         self.schedule_events()
 
     def schedule_events(self) -> list:
         sleep_times = user_routes.get_sleep(self.user_id)
+        start_units, end_units = self._parse_sleep_time(
+            sleep_times["startOfDay"], sleep_times["endOfDay"]
+        )
 
-        pass
+        for i in range(self.num_days):
+            date = datetime.now().date() + datetime.timedelta(days=i)
+            self.time_slots[date][0:start_units] = itertools.repeat(
+                "SLEEP", (start_units)
+            )
+            self.time_slots[date][end_units:] = itertools.repeat(
+                "SLEEP", (UNITS_PER_DAY - end_units)
+            )
 
     def define_blocks(self):
         blocks = []
@@ -61,17 +79,12 @@ class Schedule:
         start_time = parser.parse(start_time)
         start_time = self._round_time(start_time, True)
 
-        start_units = (start_time.hour * 60 + start_time.minute) / TIME_UNIT
-
         end_time = parser.parse(end_time)
         end_time = self._round_time(end_time, False)
 
-        end_delta = (end_time + datetime.timedelta(days=1)).replace(
-            hour=0, minute=0
-        ) - end_time
-        end_units = int(end_delta.total_seconds() / 60) / TIME_UNIT
+        start_units, end_units = self._dt_to_units(start_time, end_time)
 
-        middle_block = 48 - end_units - start_units
+        return start_units, end_units
 
     def _round_time(self, time, round_up):
         if round_up:
@@ -87,3 +100,12 @@ class Schedule:
                 time = time.replace(minute=30)
 
         return time
+
+    def _dt_to_units(self, start_time, end_time):
+        start_units = (start_time.hour * 60 + start_time.minute) / TIME_UNIT
+        end_delta = (end_time + datetime.timedelta(days=1)).replace(
+            hour=0, minute=0
+        ) - end_time
+        end_units = int(end_delta.total_seconds() / 60) / TIME_UNIT
+
+        return start_units, end_units
