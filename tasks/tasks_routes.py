@@ -19,6 +19,7 @@ def create_task(params):
     task["start_date"] = str(date.today())
     task["due_date"] = params["deadline"]
     task["estimated_time"] = params["estimatedTime"]
+    task["completed_time"] = 0
     task["completed"] = NOT_COMPLETED
 
     database.collection("tasks").add(task, tasks_id)

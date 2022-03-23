@@ -10,6 +10,7 @@ class Task:
             "id": "",
             "user_id": "",
             "name": "",
+            "completed_time": "",
             "estimated_time": "",
             "start_date": "",
             "description": "",

@@ -12,6 +12,7 @@ requests = "*"
 flask-cors = "*"
 pylint = "*"
 python-dotenv = "*"
+python-dateutil = "*"
 
 [dev-packages]
 black = "*"
