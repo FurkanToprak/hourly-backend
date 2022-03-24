@@ -22,7 +22,7 @@ def create_task(params):
     task["completed"] = NOT_COMPLETED
 
     database.collection("tasks").add(task, tasks_id)
-    return "tasks Created"
+    return task
 
 
 def get_task(params):

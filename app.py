@@ -11,7 +11,7 @@ from events import events_routes
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
-cors = CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 
 @app.route("/tests/login", methods=["POST"])
@@ -47,7 +47,8 @@ def update_sleep():
 def create_task():
     "Creating a task for a user"
     params = request.json
-    return tasks_routes.create_task(params)
+    created_task = tasks_routes.create_task(params)
+    return created_task
 
 
 @app.route("/tasks/getTasks", methods=["POST"])
