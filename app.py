@@ -109,6 +109,7 @@ def hello_world():
 def session_login():
     # Get the ID token sent by the client
     id_token = request.json["idToken"]
+    print(id_token)
     # Set session expiration to 5 days.
     expires_in = datetime.timedelta(days=5)
     try:
