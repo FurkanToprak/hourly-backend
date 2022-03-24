@@ -8,12 +8,10 @@ from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
 from events import events_routes
-import datetime
-from firebase_admin import exceptions, auth
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
-cors = CORS(app, resources={r"*": {"origins": "*"}})
+cors = CORS(app, resources={r"*": {"origins": "*"}}, supports_credentials=True)
 
 
 @app.route("/tests/login", methods=["POST"])
