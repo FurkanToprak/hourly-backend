@@ -1,6 +1,6 @@
 """Main Application File"""
 import logging
-from flask import Flask, request
+from flask import Flask, request, jsonify, abort
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
@@ -8,6 +8,8 @@ from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
 from events import events_routes
+import datetime
+from firebase_admin import exceptions, auth
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -101,3 +103,24 @@ def hello_world():
     """Return Hello World"""
     app.logger.info("Hello World Rendered")
     return "<p>Hello, World!</p>"
+
+
+@app.route("/establish_session", methods=["POST"])
+def session_login():
+    # Get the ID token sent by the client
+    id_token = request.json["idToken"]
+    # Set session expiration to 5 days.
+    expires_in = datetime.timedelta(days=5)
+    try:
+        # Create the session cookie. This will also verify the ID token in the process.
+        # The session cookie will have the same claims as the ID token.
+        session_cookie = auth.create_session_cookie(id_token, expires_in=expires_in)
+        response = jsonify({"status": "success"})
+        # Set cookie policy for session cookie.
+        expires = datetime.datetime.now() + expires_in
+        response.set_cookie(
+            "session", session_cookie, expires=expires, httponly=True, secure=True
+        )
+        return response
+    except exceptions.FirebaseError:
+        return abort(401, "Failed to create a session cookie")
