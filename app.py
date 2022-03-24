@@ -114,13 +114,20 @@ def session_login():
     try:
         # Create the session cookie. This will also verify the ID token in the process.
         # The session cookie will have the same claims as the ID token.
+        print("a")
         session_cookie = auth.create_session_cookie(id_token, expires_in=expires_in)
+        print("b")
         response = jsonify({"status": "success"})
+        print("c")
         # Set cookie policy for session cookie.
+        print("d")
         expires = datetime.datetime.now() + expires_in
+        print("e")
         response.set_cookie(
             "session", session_cookie, expires=expires, httponly=True, secure=True
         )
+        print("f")
         return response
-    except exceptions.FirebaseError:
+    except exceptions.FirebaseError as session_error:
+        print("except", session_error)
         return abort(401, "Failed to create a session cookie")
