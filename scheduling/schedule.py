@@ -32,6 +32,7 @@ class Schedule:
         self.last_task = None
         self.num_days = 0
         self.batch_writes = 0
+        self.return_message = "Success"
         self.scheduler()
 
     def scheduler(self):
@@ -53,15 +54,22 @@ class Schedule:
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
             self.time_slots[date] = []
-            for j in range(UNITS_PER_DAY):
+            for _ in range(UNITS_PER_DAY):
                 self.time_slots[date].append((None, None))
 
+        print("Writing Events and Sleep")
         self.write_events_and_sleep()
-        self.schedule_tasks()
+        print("Scheduling Tasks")
+        enough_time = self.schedule_tasks()
 
-        # Delete old blocks
-        delete_blocks(self.user_id)
-        self.define_blocks()
+        if enough_time:
+            # Delete old blocks
+            delete_blocks(self.user_id)
+            print("Defining Blocks")
+            self.define_blocks()
+            print("Done")
+        else:
+            self.return_message = "Not enough time to schedule tasks"
 
     def write_events_and_sleep(self):
         """Write User's Sleep Schedule and Events to Time Slots"""
@@ -96,7 +104,6 @@ class Schedule:
     def schedule_tasks(self):
         """Auto Schedule Users Tasks in Time Slots"""
         sub_tasks_list = []
-
         for task in self.tasks:
             num_sub_tasks = int(task["estimated_time"]) / 0.5
             priority = self.generate_priority(
@@ -104,6 +111,14 @@ class Schedule:
             )
             for _ in range(int(num_sub_tasks)):
                 sub_tasks_list.append((priority, task))
+
+        empty_slot_count = 0
+        for i in range(self.num_days):
+            date = CURRENT_TIME.date() + datetime.timedelta(days=i)
+            empty_slot_count += self.time_slots[date].count((None, None))
+
+        if empty_slot_count < len(sub_tasks_list):
+            return False
 
         sub_tasks_list.sort(key=lambda a: a[0])
         while len(sub_tasks_list) > 0:
@@ -140,6 +155,7 @@ class Schedule:
                                     )
 
                                 sub_tasks_list[k] = (priority, sub_tasks_list[k][1])
+        return True
 
     def generate_priority(self, estimated_time, completed_time, deadline) -> float:
         """Generate task's priority"""
@@ -274,3 +290,6 @@ class Schedule:
         date_time = datetime.datetime(year=date.year, month=date.month, day=date.day)
 
         return (date_time + time_delta).astimezone(pytz.utc)
+
+    def get_message(self):
+        return self.return_message

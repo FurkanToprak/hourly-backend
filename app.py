@@ -82,9 +82,10 @@ def get_events():
 @app.route("/schedule", methods=["POST"])
 def schedule_tasks():
     "Auto Scheduler"
+    print("Scheduling")
     user_id = request.json["id"]
-    schedule.Schedule(user_id)
-    return jsonify(success=True)
+    sched = schedule.Schedule(user_id)
+    return jsonify(message=sched.get_message())
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])
