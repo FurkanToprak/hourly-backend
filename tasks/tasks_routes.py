@@ -17,7 +17,7 @@ def create_task(params):
     task["label"] = params["label"]
     task["description"] = params["description"]
     task["start_date"] = str(date.today())
-    task["due_date"] = params["deadline"]
+    task["due_date"] = params["due_date"]
     task["estimated_time"] = params["estimatedTime"]
     task["completed"] = NOT_COMPLETED
 
