@@ -85,6 +85,13 @@ def get_block():
     return blocks_routes.get_block(params)
 
 
+@app.route("/blocks/createBlock", methods=["POST"])
+def create_block():
+    "Getting blocks with a user id"
+    params = request.json
+    return blocks_routes.create_block(params)
+
+
 @app.route("/google_auth", methods=["POST"])
 def google_auth():
     """Verifies Google OAuth protocols"""
