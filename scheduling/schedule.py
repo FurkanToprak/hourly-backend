@@ -45,7 +45,7 @@ class Schedule:
         # self.time_slots = (self.last_task - CURRENT_TIME).days * UNITS_PER_DAY * [None]
         self.num_days = self._utc_to_local(self.last_task["due_date"]) - CURRENT_TIME
 
-        if self.num_days.seconds / 86400 > 0.5:
+        if self.num_days.seconds > 0:
             self.num_days = self.num_days.days + 1
         else:
             self.num_days = self.num_days.days
