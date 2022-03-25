@@ -10,16 +10,11 @@ def login(email, name, start_day, end_day):
     result = database.collection("users").where("email", "==", email).get()
     print("enter NEW (x2)")
     if result:
-        print("found result")
-        print(result)
-        print("hi 1")
-        print(result[0])
-        print("hi 2")
-        print(result[0].to_dict())
+        user_match = result[0].to_dict()
         send = {
-            "id": result[0].to_dict()["id"],
-            "startOfDay": result[0].to_dict()["startOfDay"],
-            "endOfDay": result[0].to_dict()["endOfDay"],
+            "id": user_match["id"],
+            "startOfDay": user_match["startOfDay"],
+            "endOfDay": user_match["endOfDay"],
         }
         print("route A")
     else:
