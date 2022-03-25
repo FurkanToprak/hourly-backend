@@ -23,12 +23,10 @@ def create_block(params):
     return "Block Created"
 
 
-def get_block(params):
+def get_block(user_id):
     """Get blocks"""
     result = (
-        database.collection("blocks")
-        .where("user_ids", "array_contains", params["id"])
-        .get()
+        database.collection("blocks").where("user_ids", "array_contains", user_id).get()
     )
     send = []
     if result:

@@ -55,14 +55,14 @@ def create_task():
 def get_task():
     "Getting tasks with a user id"
     params = request.json
-    return tasks_routes.get_task(params)
+    return tasks_routes.get_task(params["id"])
 
 
 @app.route("/tasks/getTaskById", methods=["POST"])
 def get_task_by_id():
     "Getting task with a task id"
     params = request.json
-    return tasks_routes.get_task_by_id(params)
+    return tasks_routes.get_task_by_id(params["id"])
 
 
 @app.route("/events/createEvent", methods=["POST"])
@@ -76,7 +76,7 @@ def create_event():
 def get_events():
     "Getting events with a user id"
     params = request.json
-    return events_routes.get_events(params)
+    return events_routes.get_events(params["id"])
 
 
 @app.route("/schedule", methods=["POST"])
@@ -92,12 +92,12 @@ def schedule_tasks():
 def get_block():
     "Getting blocks with a user id"
     params = request.json
-    return blocks_routes.get_block(params)
+    return blocks_routes.get_block(params["id"])
 
 
 @app.route("/blocks/createBlock", methods=["POST"])
 def create_block():
-    "Getting blocks with a user id"
+    "Create Block"
     params = request.json
     return blocks_routes.create_block(params)
 
