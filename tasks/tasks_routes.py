@@ -33,3 +33,13 @@ def get_task(params):
         for item in result:
             send.append(item.to_dict())
     return {"tasks": send}
+
+
+def get_task_by_id(params):
+    """Get a task"""
+    result = database.collection("tasks").where("id", "==", params["id"]).get()
+    send = []
+    if result:
+        return result[0].to_dict()
+    else:
+        return False
