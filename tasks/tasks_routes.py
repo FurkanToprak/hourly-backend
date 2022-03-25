@@ -26,9 +26,9 @@ def create_task(params):
     return task
 
 
-def get_task(params):
+def get_task(user_id):
     """Get all tasks for a user"""
-    result = database.collection("tasks").where("user_id", "==", params["id"]).get()
+    result = database.collection("tasks").where("user_id", "==", user_id).get()
     send = []
     if result:
         for item in result:
@@ -36,9 +36,9 @@ def get_task(params):
     return {"tasks": send}
 
 
-def get_task_by_id(params):
+def get_task_by_id(task_id):
     """Get a task"""
-    result = database.collection("tasks").where("id", "==", params["id"]).get()
+    result = database.collection("tasks").where("id", "==", task_id).get()
     if result:
         return result[0].to_dict()
     else:

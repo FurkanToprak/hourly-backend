@@ -21,9 +21,9 @@ def create_event(params):
     return "Event Created"
 
 
-def get_events(params):
+def get_events(user_id):
     """Get events"""
-    result = database.collection("events").where("user_id", "==", params["id"]).get()
+    result = database.collection("events").where("user_id", "==", user_id).get()
     send = []
     if result:
         for item in result:
