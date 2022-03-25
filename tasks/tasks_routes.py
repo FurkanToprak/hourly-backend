@@ -27,6 +27,9 @@ def create_task(params):
 
 def get_task(params):
     """Get a task"""
+    print("test")
+    print(params)
+    print(params["id"])
     result = database.collection("tasks").where("user_id", "==", params["id"]).get()
     send = {}
     if result:
