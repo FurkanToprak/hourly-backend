@@ -58,7 +58,7 @@ def get_task():
 
 
 @app.route("/tasks/getTaskById", methods=["POST"])
-def get_task():
+def get_task_by_id():
     "Getting task with a task id"
     params = request.json
     return tasks_routes.get_task_by_id(params)
