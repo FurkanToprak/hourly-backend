@@ -1,6 +1,6 @@
 """Main Application File"""
 import logging
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
@@ -8,6 +8,7 @@ from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
 from events import events_routes
+from scheduling import schedule
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -69,6 +70,14 @@ def get_events():
     "Getting events with a user id"
     params = request.json
     return events_routes.get_events(params)
+
+
+@app.route("/schedule", methods=["POST"])
+def schedule_tasks():
+    "Auto Scheduler"
+    user_id = request.json["id"]
+    schedule.Schedule(user_id)
+    return jsonify(success=True)
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])

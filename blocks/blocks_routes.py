@@ -17,9 +17,7 @@ def create_block(params):
     block["name"] = params["name"]
     block["start_time"] = params["start_time"]
     block["end_time"] = params["end_time"]
-    block["date"] = params["date"]
     block["completed"] = NOT_COMPLETED
-    block["repeat"] = params["repeat"]
 
     database.collection("blocks").add(block, blocks_id)
     return "Block Created"
