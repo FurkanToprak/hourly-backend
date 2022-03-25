@@ -54,8 +54,6 @@ def create_task():
 def get_task():
     "Getting tasks with a user id"
     params = request.json
-    print("params")
-    print(params)
     return tasks_routes.get_task(params)
 
 

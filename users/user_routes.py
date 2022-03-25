@@ -8,19 +8,14 @@ def login(email, name, start_day, end_day):
     """Check If user is logged in"""
     user = User().structure()
     result = database.collection("users").where("email", "==", email).get()
-    print("enter NEW (x2)")
     if result:
         user_match = result[0].to_dict()
-        print("before send")
         send = {
             "id": user_match["id"],
             "startOfDay": user_match["startOfDay"],
             "endOfDay": user_match["endOfDay"],
         }
-        print("send")
-        print(send)
     else:
-        print("no result")
         doc_ref = database.collection("users").document()
         doc_id = doc_ref.id
 
@@ -30,11 +25,7 @@ def login(email, name, start_day, end_day):
         user["startOfDay"] = start_day
         user["endOfDay"] = end_day
         database.collection("users").add(user, doc_id)
-        send = {"id": doc_id}
-        print(doc_id)
-        print("route B")
-    print("send")
-    print(send)
+        send = {"id": doc_id, "startOfDay": start_day, "endOfDay": end_day}
     return jsonify(send)
 
 
