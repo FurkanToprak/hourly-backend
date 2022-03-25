@@ -8,8 +8,10 @@ def login(email, name, start_day, end_day):
     """Check If user is logged in"""
     user = User().structure()
     result = database.collection("users").where("email", "==", email).get()
-    print("enter login")
+    print("enter login NEW NEW")
     if result:
+        print("found result")
+        print(result)
         send = {
             "id": result[0].to_dict()["id"],
             "startOfDay": result[0].to_dict()["startOfDay"],
@@ -17,6 +19,7 @@ def login(email, name, start_day, end_day):
         }
         print("route A")
     else:
+        print("no result")
         doc_ref = database.collection("users").document()
         doc_id = doc_ref.id
 
