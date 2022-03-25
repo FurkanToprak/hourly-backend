@@ -33,7 +33,7 @@ def get_sleep():
     return user_routes.get_sleep(user_id)
 
 
-@app.route("/users/updateSleep", methods=["POST"])
+@app.route("/users/update_sleep", methods=["POST"])
 def update_sleep():
     """Update Users Sleep Schedule"""
     params = request.json
