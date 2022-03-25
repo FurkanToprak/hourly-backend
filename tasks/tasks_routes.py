@@ -32,4 +32,4 @@ def get_task(params):
     if result:
         for item in result:
             send.append(item.to_dict())
-    return send
+    return {"tasks": send}
