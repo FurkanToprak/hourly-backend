@@ -17,8 +17,9 @@ def create_task(params):
     task["label"] = params["label"]
     task["description"] = params["description"]
     task["start_date"] = str(date.today())
+    task["estimated_time"] = params["estimatedTime"]
+    task["completed_time"] = 0
     task["due_date"] = params["due_date"]
-    task["estimated_time"] = params["estimated_time"]
     task["completed"] = NOT_COMPLETED
 
     database.collection("tasks").add(task, tasks_id)
@@ -26,7 +27,7 @@ def create_task(params):
 
 
 def get_task(params):
-    """Get a task"""
+    """Get all tasks for a user"""
     result = database.collection("tasks").where("user_id", "==", params["id"]).get()
     send = []
     if result:
@@ -42,3 +43,13 @@ def get_task_by_id(params):
         return result[0].to_dict()
     else:
         return False
+
+
+def get_task_scheduler(user_id):
+    """Get all tasks for a user for the scheduler"""
+    result = database.collection("tasks").where("user_id", "==", user_id).get()
+    send = {}
+    if result:
+        for item in result:
+            send[item.to_dict()["id"]] = item.to_dict()
+    return send

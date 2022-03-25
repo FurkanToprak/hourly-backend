@@ -6,10 +6,11 @@ class Task:
 
     def structure(self):
         """task structure"""
-        Task = {
+        task = {
             "id": "",
             "user_id": "",
             "name": "",
+            "completed_time": "",
             "estimated_time": "",
             "start_date": "",
             "description": "",
@@ -17,4 +18,4 @@ class Task:
             "completed": "",
             "label": "",
         }
-        return Task
+        return task

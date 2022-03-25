@@ -24,6 +24,16 @@ def create_event(params):
 def get_events(params):
     """Get events"""
     result = database.collection("events").where("user_id", "==", params["id"]).get()
+    send = []
+    if result:
+        for item in result:
+            send.append(item.to_dict())
+    return {"events": send}
+
+
+def get_events_scheduler(user_id):
+    """Get events"""
+    result = database.collection("events").where("user_id", "==", user_id).get()
     send = {}
     if result:
         for i, item in enumerate(result):

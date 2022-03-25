@@ -17,9 +17,7 @@ def create_block(params):
     block["name"] = params["name"]
     block["start_time"] = params["start_time"]
     block["end_time"] = params["end_time"]
-    block["date"] = params["date"]
     block["completed"] = NOT_COMPLETED
-    block["repeat"] = params["repeat"]
 
     database.collection("blocks").add(block, blocks_id)
     return "Block Created"
@@ -37,3 +35,16 @@ def get_block(params):
         for _i, item in enumerate(result):
             send.append(item.to_dict())
     return {"blocks": send}
+
+
+def delete_blocks(user_id):
+    """Delete all blocks for a user"""
+    result = (
+        database.collection("blocks").where("user_ids", "array_contains", user_id).get()
+    )
+
+    db_batch = database.batch()
+    for item in result:
+        db_batch.delete(item.reference)
+
+    db_batch.commit()
