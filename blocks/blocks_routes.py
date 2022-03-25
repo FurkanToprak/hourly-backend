@@ -30,7 +30,7 @@ def get_block(params):
         .where("user_ids", "array_contains", params["id"])
         .get()
     )
-    send = {}
+    send = []
     if result:
         for i, item in enumerate(result):
             send[i] = item.to_dict()

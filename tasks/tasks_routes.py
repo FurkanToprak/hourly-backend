@@ -12,14 +12,14 @@ def create_task(params):
     task = Task().structure()
 
     task["id"] = tasks_id
-    task["user_id"] = params["id"]
+    task["user_id"] = params["user_id"]
     task["name"] = params["name"]
     task["label"] = params["label"]
     task["description"] = params["description"]
     task["start_date"] = str(date.today())
-    task["due_date"] = params["deadline"]
     task["estimated_time"] = params["estimatedTime"]
     task["completed_time"] = 0
+    task["due_date"] = params["due_date"]
     task["completed"] = NOT_COMPLETED
 
     database.collection("tasks").add(task, tasks_id)
@@ -28,12 +28,18 @@ def create_task(params):
 
 def get_task(params):
     """Get a task"""
-    print("test")
-    print(params)
-    print(params["id"])
     result = database.collection("tasks").where("user_id", "==", params["id"]).get()
-    send = {}
+    send = []
     if result:
         for item in result:
-            send[item.to_dict()["id"]] = item.to_dict()
-    return send
+            send.append(item.to_dict())
+    return {"tasks": send}
+
+
+def get_task_by_id(params):
+    """Get a task"""
+    result = database.collection("tasks").where("id", "==", params["id"]).get()
+    if result:
+        return result[0].to_dict()
+    else:
+        return False

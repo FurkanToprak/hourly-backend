@@ -55,9 +55,14 @@ def create_task():
 def get_task():
     "Getting tasks with a user id"
     params = request.json
-    print("params")
-    print(params)
     return tasks_routes.get_task(params)
+
+
+@app.route("/tasks/getTaskById", methods=["POST"])
+def get_task_by_id():
+    "Getting task with a task id"
+    params = request.json
+    return tasks_routes.get_task_by_id(params)
 
 
 @app.route("/events/createEvent", methods=["POST"])
@@ -89,6 +94,13 @@ def get_block():
     return blocks_routes.get_block(params)
 
 
+@app.route("/blocks/createBlock", methods=["POST"])
+def create_block():
+    "Getting blocks with a user id"
+    params = request.json
+    return blocks_routes.create_block(params)
+
+
 @app.route("/google_auth", methods=["POST"])
 def google_auth():
     """Verifies Google OAuth protocols"""
@@ -100,7 +112,6 @@ def google_auth():
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         user_email = idinfo["email"]
-        print("hits this route")
         return user_routes.login(user_email, user_name, start_day, end_day)
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token

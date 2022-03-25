@@ -9,10 +9,11 @@ def login(email, name, start_day, end_day):
     user = User().structure()
     result = database.collection("users").where("email", "==", email).get()
     if result:
+        user_match = result[0].to_dict()
         send = {
-            "id": result[0].to_dict()["id"],
-            "startOfDay": result[0].to_dict()["startOfDay"],
-            "endOfDay": result[0].to_dict()["endOfDay"],
+            "id": user_match["id"],
+            "startOfDay": user_match["startOfDay"],
+            "endOfDay": user_match["endOfDay"],
         }
     else:
         doc_ref = database.collection("users").document()
@@ -24,10 +25,7 @@ def login(email, name, start_day, end_day):
         user["startOfDay"] = start_day
         user["endOfDay"] = end_day
         database.collection("users").add(user, doc_id)
-        send = {"id": doc_id}
-        print(doc_id)
-    print("send")
-    print(send)
+        send = {"id": doc_id, "startOfDay": start_day, "endOfDay": end_day}
     return jsonify(send)
 
 
