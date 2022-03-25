@@ -36,7 +36,7 @@ class Schedule:
 
     def scheduler(self):
         """Main scheduling flow"""
-        self.tasks = tasks_routes.get_task({"id": self.user_id})
+        self.tasks = tasks_routes.get_task_scheduler(self.user_id)
         self.tasks = [value for value in self.tasks.values()]
         self.last_task = max(
             self.tasks, key=lambda x: self._utc_to_local(x["due_date"])
@@ -208,7 +208,7 @@ class Schedule:
 
     def _parse_events(self):
         """Turn list of events into date keyed dictionary"""
-        event_list = events_routes.get_events({"id": self.user_id})
+        event_list = events_routes.get_events_scheduler(self.user_id)
         event_list = [value for value in event_list.values()]
 
         event_dict = {}

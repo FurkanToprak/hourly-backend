@@ -32,9 +32,9 @@ def get_block(params):
     )
     send = []
     if result:
-        for i, item in enumerate(result):
-            send[i] = item.to_dict()
-    return send
+        for _i, item in enumerate(result):
+            send.append(item.to_dict())
+    return {"blocks": send}
 
 
 def delete_blocks(user_id):
