@@ -12,7 +12,7 @@ def create_task(params):
     task = Task().structure()
 
     task["id"] = tasks_id
-    task["user_id"] = params["id"]
+    task["user_id"] = params["user_id"]
     task["name"] = params["name"]
     task["label"] = params["label"]
     task["description"] = params["description"]
@@ -27,8 +27,6 @@ def create_task(params):
 
 def get_task(params):
     """Get a task"""
-    print("look params")
-    print(params)
     result = database.collection("tasks").where("user_id", "==", params["id"]).get()
     send = {}
     if result:
