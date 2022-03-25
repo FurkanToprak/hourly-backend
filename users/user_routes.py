@@ -26,7 +26,8 @@ def login(email, name, start_day, end_day):
         database.collection("users").add(user, doc_id)
         send = {"id": doc_id}
         print(doc_id)
-
+    print("send")
+    print(send)
     return jsonify(send)
 
 

@@ -91,7 +91,7 @@ def google_auth():
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         user_email = idinfo["email"]
-
+        print("hits this route")
         return user_routes.login(user_email, user_name, start_day, end_day)
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
