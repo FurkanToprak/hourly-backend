@@ -60,10 +60,7 @@ class Schedule:
         self.schedule_tasks()
 
         # Delete old blocks
-        print("Deleting Blocks")
         delete_blocks(self.user_id)
-        print("Deleted")
-        input()
         self.define_blocks()
 
     def write_events_and_sleep(self):
