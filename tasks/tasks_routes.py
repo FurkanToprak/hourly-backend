@@ -28,9 +28,8 @@ def create_task(params):
 def get_task(params):
     """Get a task"""
     result = database.collection("tasks").where("user_id", "==", params["id"]).get()
-    send = {}
+    send = []
     if result:
         for item in result:
-            dict_item = item.to_dict()
-            send[dict_item["id"]] = dict_item
+            send.append(item.to_dict())
     return send
