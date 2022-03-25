@@ -47,14 +47,15 @@ def update_sleep():
 def create_task():
     "Creating a task for a user"
     params = request.json
-    created_task = tasks_routes.create_task(params)
-    return created_task
+    return tasks_routes.create_task(params)
 
 
 @app.route("/tasks/getTasks", methods=["POST"])
 def get_task():
     "Getting tasks with a user id"
     params = request.json
+    print("params")
+    print(params)
     return tasks_routes.get_task(params)
 
 
