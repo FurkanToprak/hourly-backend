@@ -57,6 +57,13 @@ def get_task():
     return tasks_routes.get_task(params)
 
 
+@app.route("/tasks/getTaskById", methods=["POST"])
+def get_task():
+    "Getting task with a task id"
+    params = request.json
+    return tasks_routes.get_task_by_id(params)
+
+
 @app.route("/events/createEvent", methods=["POST"])
 def create_event():
     "Create an event for a user"
