@@ -8,8 +8,6 @@ from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
 from events import events_routes
-import datetime
-from firebase_admin import exceptions, auth
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -49,7 +47,8 @@ def update_sleep():
 def create_task():
     "Creating a task for a user"
     params = request.json
-    return tasks_routes.create_task(params)
+    created_task = tasks_routes.create_task(params)
+    return created_task
 
 
 @app.route("/tasks/getTasks", methods=["POST"])
