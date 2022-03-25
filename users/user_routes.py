@@ -11,12 +11,14 @@ def login(email, name, start_day, end_day):
     print("enter NEW (x2)")
     if result:
         user_match = result[0].to_dict()
+        print("before send")
         send = {
             "id": user_match["id"],
             "startOfDay": user_match["startOfDay"],
             "endOfDay": user_match["endOfDay"],
         }
-        print("route A")
+        print("send")
+        print(send)
     else:
         print("no result")
         doc_ref = database.collection("users").document()
