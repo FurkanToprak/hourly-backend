@@ -35,3 +35,16 @@ def get_block(params):
         for i, item in enumerate(result):
             send[i] = item.to_dict()
     return send
+
+
+def delete_blocks(user_id):
+    """Delete all blocks for a user"""
+    result = (
+        database.collection("blocks").where("user_ids", "array_contains", user_id).get()
+    )
+
+    db_batch = database.batch()
+    for item in result:
+        db_batch.delete(item.reference)
+
+    db_batch.commit()

@@ -7,6 +7,7 @@ from tasks import tasks_routes
 from users import user_routes
 from events import events_routes
 from blocks.models import Block
+from blocks.blocks_routes import delete_blocks
 from db_connection import database
 from constants import NOT_COMPLETED
 
@@ -57,6 +58,12 @@ class Schedule:
 
         self.write_events_and_sleep()
         self.schedule_tasks()
+
+        # Delete old blocks
+        print("Deleting Blocks")
+        delete_blocks(self.user_id)
+        print("Deleted")
+        input()
         self.define_blocks()
 
     def write_events_and_sleep(self):
