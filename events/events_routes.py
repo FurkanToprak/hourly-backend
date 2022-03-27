@@ -14,7 +14,6 @@ def create_event(params):
     event["name"] = params["name"]
     event["start_time"] = params["start_time"]
     event["end_time"] = params["end_time"]
-    event["date"] = params["date"]
     event["repeat"] = params["repeat"]
 
     database.collection("events").add(event, event_id)

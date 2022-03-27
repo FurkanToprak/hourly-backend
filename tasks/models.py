@@ -17,5 +17,6 @@ class Task:
             "due_date": "",
             "completed": "",
             "label": "",
+            "do_not_schedule": "",
         }
         return task

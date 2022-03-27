@@ -85,7 +85,8 @@ def schedule_tasks():
     print("Scheduling")
     user_id = request.json["id"]
     sched = schedule.Schedule(user_id)
-    return jsonify(message=sched.get_message())
+    failed, message = sched.get_message()
+    return jsonify(failed=failed, message=message)
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])

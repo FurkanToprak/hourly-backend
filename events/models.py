@@ -12,7 +12,6 @@ class Event:
             "name": "",
             "start_time": "",
             "end_time": "",
-            "date": "",
             "repeat": "",
         }
         return event

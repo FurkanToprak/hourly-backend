@@ -21,6 +21,7 @@ def create_task(params):
     task["completed_time"] = 0
     task["due_date"] = params["due_date"]
     task["completed"] = NOT_COMPLETED
+    task["do_not_schedule"] = False
 
     database.collection("tasks").add(task, tasks_id)
     return task
@@ -43,6 +44,9 @@ def get_task_by_id(task_id):
         return result[0].to_dict()
     else:
         return False
+
+
+# TODO: Make Delete Task and Mark as Do Not Schedule
 
 
 def get_task_scheduler(user_id):

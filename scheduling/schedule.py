@@ -10,6 +10,7 @@ from blocks.models import Block
 from blocks.blocks_routes import delete_blocks
 from db_connection import database
 from constants import NOT_COMPLETED
+import pprint
 
 
 TIME_UNIT = 30
@@ -105,7 +106,7 @@ class Schedule:
         """Auto Schedule Users Tasks in Time Slots"""
         sub_tasks_list = []
         for task in self.tasks:
-            num_sub_tasks = int(task["estimated_time"]) / 0.5
+            num_sub_tasks = float(task["estimated_time"]) / 0.5
             priority = self.generate_priority(
                 task["estimated_time"], task["completed_time"], task["due_date"]
             )
@@ -247,9 +248,9 @@ class Schedule:
 
     def _parse_sleep_time(self, start_time, end_time):
         """Parse sleep time into time units"""
-        start_time = parser.parse(start_time)
+        start_time = self._utc_to_local(start_time)
 
-        end_time = parser.parse(end_time)
+        end_time = self._utc_to_local(end_time)
 
         start_units, end_units = self._dt_to_units(start_time, end_time)
 
@@ -292,4 +293,7 @@ class Schedule:
         return (date_time + time_delta).astimezone(pytz.utc)
 
     def get_message(self):
-        return self.return_message
+        if self.return_message == "Success":
+            return (False, self.return_message)
+        else:
+            return (True, self.return_message)

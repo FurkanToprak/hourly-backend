@@ -25,6 +25,7 @@ def create_block(params):
 
 def get_block(user_id):
     """Get blocks"""
+    # TODO: Merge Blocks Together For Tasks
     result = (
         database.collection("blocks").where("user_ids", "array_contains", user_id).get()
     )
