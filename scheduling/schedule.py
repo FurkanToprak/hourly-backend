@@ -1,6 +1,7 @@
 """ Auto Scheduling Algorithm"""
 import datetime
 import itertools
+from pprint import pprint
 from dateutil import parser
 import pytz
 from tasks import tasks_routes
@@ -10,6 +11,7 @@ from blocks.models import Block
 from blocks.blocks_routes import delete_blocks
 from db_connection import database
 from constants import NOT_COMPLETED
+import pprint
 
 TIME_UNIT = 30
 UNITS_PER_DAY = int((24 * 60 / TIME_UNIT))
@@ -38,16 +40,22 @@ class Schedule:
         """Main scheduling flow"""
         self.tasks = tasks_routes.get_task_scheduler(self.user_id)
         self.tasks = [value for value in self.tasks.values()]
-        self.last_task = max(
-            self.tasks, key=lambda x: self._utc_to_local(x["due_date"])
-        )
-        # self.time_slots = (self.last_task - CURRENT_TIME).days * UNITS_PER_DAY * [None]
-        self.num_days = self._utc_to_local(self.last_task["due_date"]) - CURRENT_TIME
 
-        if self.num_days.seconds > 0:
-            self.num_days = self.num_days.days + 1
+        if len(self.tasks) == 0:
+            self.num_days = 10
         else:
-            self.num_days = self.num_days.days
+            self.last_task = max(
+                self.tasks, key=lambda x: self._utc_to_local(x["due_date"])
+            )
+            # self.time_slots = (self.last_task - CURRENT_TIME).days * UNITS_PER_DAY * [None]
+            self.num_days = (
+                self._utc_to_local(self.last_task["due_date"]) - CURRENT_TIME
+            )
+
+            if self.num_days.seconds > 0:
+                self.num_days = self.num_days.days + 1
+            else:
+                self.num_days = self.num_days.days
 
         self.time_slots = {}
         for i in range(self.num_days):
@@ -55,6 +63,9 @@ class Schedule:
             self.time_slots[date] = []
             for _ in range(UNITS_PER_DAY):
                 self.time_slots[date].append((None, None))
+
+        if len(self.tasks) == 0:
+            self.no_tasks_present()
 
         print("Writing Events and Sleep")
         self.write_events_and_sleep()
@@ -69,6 +80,14 @@ class Schedule:
             print("Done")
         else:
             self.return_message = "Not enough time to schedule tasks"
+
+    def no_tasks_present(self):
+        print("Writing Events and Sleep")
+        self.write_events_and_sleep()
+        self.return_message = "Success"
+        print("Defining Blocks")
+        self.define_blocks()
+        print("Done")
 
     def write_events_and_sleep(self):
         """Write User's Sleep Schedule and Events to Time Slots"""
@@ -100,6 +119,15 @@ class Schedule:
                     )
                     # Write to first slot in day to indicate event or task has been written
                     self.time_slots[date][0] = ("NO_SKIP", None)
+
+        # Write sleep until current time to prevent tasks being scheduled in the past
+        today = CURRENT_TIME.date()
+        cur_time_rounded = self._ceil_dt(CURRENT_TIME, datetime.timedelta(minutes=30))
+        begin_day = (cur_time_rounded.hour * 60 + cur_time_rounded.minute) / TIME_UNIT
+
+        for i in range(1, begin_day + 1):
+            if self.time_slots[today][i][0] != "EVENT":
+                self.time_slots[today][i] = ("SLEEP", None)
 
     def schedule_tasks(self):
         """Auto Schedule Users Tasks in Time Slots"""
@@ -229,10 +257,8 @@ class Schedule:
 
         event_dict = {}
         for event in event_list:
-            start_time = self._round_time(
-                self._utc_to_local(event["start_time"]), False
-            )
-            end_time = self._round_time(self._utc_to_local(event["end_time"]), True)
+            start_time = self._utc_to_local(event["start_time"])
+            end_time = self._utc_to_local(event["end_time"])
             start_units, end_units = self._dt_to_units(start_time, end_time)
             event["start_units"] = start_units
             event["end_units"] = end_units
@@ -290,6 +316,9 @@ class Schedule:
         date_time = datetime.datetime(year=date.year, month=date.month, day=date.day)
 
         return (date_time + time_delta).astimezone(pytz.utc)
+
+    def _ceil_dt(self, dt, delta):
+        return dt + (datetime.min - dt) % delta
 
     def get_message(self):
         if self.return_message == "Success":
