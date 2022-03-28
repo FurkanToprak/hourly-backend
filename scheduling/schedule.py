@@ -10,8 +10,6 @@ from blocks.models import Block
 from blocks.blocks_routes import delete_blocks
 from db_connection import database
 from constants import NOT_COMPLETED
-import pprint
-
 
 TIME_UNIT = 30
 UNITS_PER_DAY = int((24 * 60 / TIME_UNIT))
@@ -72,8 +70,6 @@ class Schedule:
         else:
             self.return_message = "Not enough time to schedule tasks"
 
-        pprint.pprint(self.time_slots)
-
     def write_events_and_sleep(self):
         """Write User's Sleep Schedule and Events to Time Slots"""
         sleep_times = user_routes.get_sleep(self.user_id)
@@ -82,8 +78,6 @@ class Schedule:
         )
 
         event_dict = self._parse_events()
-
-        pprint.pprint(event_dict)
 
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
@@ -106,8 +100,6 @@ class Schedule:
                     )
                     # Write to first slot in day to indicate event or task has been written
                     self.time_slots[date][0] = ("NO_SKIP", None)
-
-        pprint.pprint(self.time_slots)
 
     def schedule_tasks(self):
         """Auto Schedule Users Tasks in Time Slots"""
