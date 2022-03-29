@@ -38,7 +38,7 @@ def get_block(user_id):
     start_time = timer()
     send = _merge_blocks(send)
     print(f"Merge Time - {timer() - start_time :0f}")
-    
+
     send = _merge_blocks(send)
 
     return {"blocks": send}
