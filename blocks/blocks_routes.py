@@ -1,5 +1,6 @@
 """ Routes for blocks """
 import itertools
+from timeit import default_timer as timer
 from blocks.models import Block
 from db_connection import database
 from constants import NOT_COMPLETED
@@ -34,7 +35,9 @@ def get_block(user_id):
         for _i, item in enumerate(result):
             send.append(item.to_dict())
 
+    start_time = timer()
     send = _merge_blocks(send)
+    print(f"Merge Time - {timer() - start_time :0f}")
 
     return {"blocks": send}
 
@@ -82,5 +85,9 @@ def _merge_blocks(block_list):
             else:
                 i += 1
         merged_tasks.extend(group_list)
+
+    for i in range(len(merged_tasks)):
+        if "merge_count" not in merged_tasks[i]:
+            merged_tasks[i]["merge_count"] = 0
 
     return event_list + merged_tasks
