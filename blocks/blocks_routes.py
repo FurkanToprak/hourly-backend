@@ -25,8 +25,17 @@ def create_block(params):
     return "Block Created"
 
 
+def get_block_by_id(block_id):
+    """Got block with the block id"""
+    print(block_id)
+    result = database.collection("blocks").where("id", "==", block_id).get()
+    if result:
+        return result[0].to_dict()
+    return False
+
+
 def get_block(user_id):
-    """Get blocks"""
+    """Get blocks for a given user via the user id"""
     result = (
         database.collection("blocks").where("user_ids", "array_contains", user_id).get()
     )

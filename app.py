@@ -1,6 +1,6 @@
 """Main Application File"""
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
@@ -8,7 +8,6 @@ from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
 from events import events_routes
-from scheduling import schedule
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -51,18 +50,18 @@ def create_task():
     return tasks_routes.create_task(params)
 
 
+@app.route("/tasks/updateTask", methods=["POST"])
+def update_task():
+    "Send completed blocks to update the task"
+    params = request.json
+    return tasks_routes.update_task_hours(params)
+
+
 @app.route("/tasks/getTasks", methods=["POST"])
-def get_task():
-    "Getting tasks with a user id"
+def get_user_tasks():
+    "Getting all tasks for a specific user with a user id"
     params = request.json
-    return tasks_routes.get_task(params["id"])
-
-
-@app.route("/tasks/getTaskById", methods=["POST"])
-def get_task_by_id():
-    "Getting task with a task id"
-    params = request.json
-    return tasks_routes.get_task_by_id(params["id"])
+    return tasks_routes.get_user_tasks(params)
 
 
 @app.route("/events/createEvent", methods=["POST"])
@@ -76,31 +75,14 @@ def create_event():
 def get_events():
     "Getting events with a user id"
     params = request.json
-    return events_routes.get_events(params["id"])
-
-
-@app.route("/schedule", methods=["POST"])
-def schedule_tasks():
-    "Auto Scheduler"
-    print("Scheduling")
-    user_id = request.json["id"]
-    sched = schedule.Schedule(user_id)
-    failed, message = sched.get_message()
-    return jsonify(failed=failed, message=message)
+    return events_routes.get_events(params)
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])
 def get_block():
     "Getting blocks with a user id"
     params = request.json
-    return blocks_routes.get_block(params["id"])
-
-
-@app.route("/blocks/createBlock", methods=["POST"])
-def create_block():
-    "Create Block"
-    params = request.json
-    return blocks_routes.create_block(params)
+    return blocks_routes.get_block(params)
 
 
 @app.route("/google_auth", methods=["POST"])
@@ -114,6 +96,7 @@ def google_auth():
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request())
         user_email = idinfo["email"]
+
         return user_routes.login(user_email, user_name, start_day, end_day)
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
