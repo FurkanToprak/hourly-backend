@@ -65,6 +65,13 @@ def get_task_by_id():
     return tasks_routes.get_task_by_id(params["id"])
 
 
+@app.route("/tasks/cramTask", methods=["POST"])
+def cram_task():
+    "Mark task as cram"
+    params = request.json
+    return tasks_routes.cram_task(params["id"])
+
+
 @app.route("/events/createEvent", methods=["POST"])
 def create_event():
     "Create an event for a user"
