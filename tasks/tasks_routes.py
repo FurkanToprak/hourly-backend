@@ -47,7 +47,27 @@ def get_task_by_id(task_id):
         return False
 
 
-# TODO: Make Delete Task and Mark as Do Not Schedule
+def delete_task(task_id):
+    """Delete a task"""
+    result = database.collection("tasks").where("id", "==", task_id).get()
+    if result:
+        for item in result:
+            item.reference.delete()
+        return {"success": True}
+    else:
+        return {"success": False}
+
+
+def cram_task(task_id):
+    """Mark a task as do_not_schedule to indicate cram"""
+    result = database.collection("tasks").where("id", "==", task_id).get()
+
+    if result:
+        result.update({"do_not_schedule": task_id})
+    else:
+        return {"success": False}
+
+    return {"success": True}
 
 
 def get_task_scheduler(user_id):
@@ -61,26 +81,20 @@ def get_task_scheduler(user_id):
 
 
 def update_task_hours(params):
-    block_ids = params["blocks"]
-    blocks = []
+    task_id = params["task_id"]
+    hours = params["hours"]
 
-    for block_id in block_ids:
-        blocks.append(blocks_routes.get_block_by_id(block_id))
+    task = get_task_by_id(task_id)
 
-    for block in blocks:
-        task_id = block["task_id"]
-        task = get_task_by_id(task_id)
+    if task["estimated_time"] == (task["completed_time"] + hours):
+        status = completed_task(task_id)
+        if status is False:
+            return {"succuess": False}
 
-        if task["estimated_time"] == (task["completed_time"] + 0.5):
-            status = completed_task(task_id)
-
-            if status is False:
-                continue
-
-        database.collection("tasks").document(task_id).update(
-            {"completed_time": (task["completed_time"] + 0.5)}
-        )
-    return "updated task"
+    database.collection("tasks").document(task_id).update(
+        {"completed_time": (task["completed_time"] + hours)}
+    )
+    return {"success": True}
 
 
 def completed_task(task_id):
