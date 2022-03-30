@@ -1,6 +1,7 @@
 """ Routes for events """
 from events.models import Event
 from db_connection import database
+from dateutil import parser
 
 
 def create_event(params):
@@ -30,11 +31,34 @@ def get_events(user_id):
     return {"events": send}
 
 
-def get_events_scheduler(user_id):
+def get_events_scheduler(user_id, cur_date):
     """Get events"""
-    result = database.collection("events").where("user_id", "==", user_id).get()
-    send = {}
-    if result:
-        for i, item in enumerate(result):
-            send[i] = item.to_dict()
-    return send
+    repeat_events = (
+        database.collection("events")
+        .where("user_id", "==", user_id)
+        .where("repeat", "!=", "")
+        .get()
+    )
+    non_repeat_events = (
+        database.collection("events")
+        .where("user_id", "==", user_id)
+        .where("repeat", "==", "")
+        .get()
+    )
+
+    non_repeat_events = [
+        item
+        for item in non_repeat_events
+        if parser.parse(item.to_dict()["start_time"]).date() >= cur_date
+    ]
+    non_repeat_send = {}
+    if non_repeat_events:
+        for i, item in enumerate(non_repeat_events):
+            non_repeat_send[i] = item.to_dict()
+
+    repeat_send = {}
+    if repeat_events:
+        for i, item in enumerate(repeat_events):
+            repeat_send[i] = item.to_dict()
+
+    return non_repeat_send, repeat_send
