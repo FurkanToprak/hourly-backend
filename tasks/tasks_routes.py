@@ -46,7 +46,14 @@ def get_task_by_id(task_id):
         return False
 
 
-# TODO: Make Delete Task and Mark as Do Not Schedule
+def delete_task(task_id):
+    """Delete a task"""
+    result = database.collection("tasks").where("id", "==", task_id).get()
+    if result:
+        result.delete()
+        return {"success": True}
+    else:
+        return {"success": False}
 
 
 def cram_task(task_id):

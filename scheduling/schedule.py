@@ -37,13 +37,13 @@ class Schedule:
 
     def scheduler(self):
         """Main scheduling flow"""
-        self.tasks = tasks_routes.get_task_scheduler(self.user_id)
+        task_list = tasks_routes.get_task_scheduler(self.user_id)
         self.tasks = [
-            value for value in self.tasks.values() if not value["do_not_schedule"]
+            value for value in task_list.values() if not value["do_not_schedule"]
         ]
 
         self.cram_tasks = [
-            value for value in self.tasks.values() if value["do_not_schedule"]
+            value for value in task_list.values() if value["do_not_schedule"]
         ]
 
         if len(self.tasks) == 0:

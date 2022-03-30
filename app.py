@@ -58,6 +58,13 @@ def get_task():
     return tasks_routes.get_task(params["id"])
 
 
+@app.route("/tasks/deleteTasks", methods=["POST"])
+def delete_task():
+    "Delete tasks with a task id"
+    params = request.json
+    return tasks_routes.delete_task(params["id"])
+
+
 @app.route("/tasks/getTaskById", methods=["POST"])
 def get_task_by_id():
     "Getting task with a task id"
