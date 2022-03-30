@@ -11,7 +11,6 @@ from blocks.models import Block
 from blocks.blocks_routes import delete_blocks
 from db_connection import database
 from constants import NOT_COMPLETED
-import pprint
 
 TIME_UNIT = 30
 UNITS_PER_DAY = int((24 * 60 / TIME_UNIT))
@@ -47,7 +46,6 @@ class Schedule:
             self.last_task = max(
                 self.tasks, key=lambda x: self._utc_to_local(x["due_date"])
             )
-            # self.time_slots = (self.last_task - CURRENT_TIME).days * UNITS_PER_DAY * [None]
             self.num_days = (
                 self._utc_to_local(self.last_task["due_date"]) - CURRENT_TIME
             )
@@ -66,28 +64,35 @@ class Schedule:
 
         if len(self.tasks) == 0:
             self.no_tasks_present()
-
-        print("Writing Events and Sleep")
-        self.write_events_and_sleep()
-        print("Scheduling Tasks")
-        enough_time = self.schedule_tasks()
-
-        if enough_time:
-            # Delete old blocks
-            delete_blocks(self.user_id)
-            print("Defining Blocks")
-            self.define_blocks()
-            print("Done")
         else:
-            self.return_message = "Not enough time to schedule tasks"
+            print("Writing Events and Sleep")
+            self.write_events_and_sleep()
+            print("Scheduling Tasks")
+            enough_time = self.schedule_tasks()
+
+            if enough_time:
+                # Delete old blocks
+                delete_blocks(self.user_id)
+                print("Defining Blocks")
+                self.define_blocks()
+                print("Done")
+            else:
+                self.return_message = "Not enough time to schedule tasks"
 
     def no_tasks_present(self):
         print("Writing Events and Sleep")
         self.write_events_and_sleep()
         self.return_message = "Success"
+        delete_blocks(self.user_id)
         print("Defining Blocks")
         self.define_blocks()
         print("Done")
+
+    def get_message(self):
+        if self.return_message == "Success":
+            return (False, self.return_message)
+        else:
+            return (True, self.return_message)
 
     def write_events_and_sleep(self):
         """Write User's Sleep Schedule and Events to Time Slots"""
@@ -97,6 +102,8 @@ class Schedule:
         )
 
         event_dict = self._parse_events()
+
+        print(event_dict)
 
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
@@ -125,7 +132,7 @@ class Schedule:
         cur_time_rounded = self._ceil_dt(CURRENT_TIME, datetime.timedelta(minutes=30))
         begin_day = (cur_time_rounded.hour * 60 + cur_time_rounded.minute) / TIME_UNIT
 
-        for i in range(1, begin_day + 1):
+        for i in range(1, int(begin_day) + 1):
             if self.time_slots[today][i][0] != "EVENT":
                 self.time_slots[today][i] = ("SLEEP", None)
 
@@ -252,8 +259,12 @@ class Schedule:
 
     def _parse_events(self):
         """Turn list of events into date keyed dictionary"""
-        event_list = events_routes.get_events_scheduler(self.user_id)
+        event_list, repeat_event_list = events_routes.get_events_scheduler(
+            self.user_id, CURRENT_TIME.date()
+        )
         event_list = [value for value in event_list.values()]
+
+        repeat_event_list = [value for value in repeat_event_list.values()]
 
         event_dict = {}
         for event in event_list:
@@ -268,6 +279,29 @@ class Schedule:
                 event_dict[date] = [event]
             else:
                 event_dict[date].append(event)
+
+        for event in repeat_event_list:
+            start_time = self._utc_to_local(event["start_time"])
+            end_time = self._utc_to_local(event["end_time"])
+            start_units, end_units = self._dt_to_units(start_time, end_time)
+            event["start_units"] = start_units
+            event["end_units"] = end_units
+
+            repeat_days = self._repeat_events_parser(event["repeat"])
+
+            for i in range(self.num_days):
+                date = CURRENT_TIME.date() + datetime.timedelta(days=i)
+                if repeat_days[date.weekday()]:
+                    event["start_time"] = start_time.replace(
+                        day=date.day, month=date.month, year=date.year
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    event["end_time"] = end_time.replace(
+                        day=date.day, month=date.month, year=date.year
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    if date not in event_dict:
+                        event_dict[date] = [event.copy()]
+                    else:
+                        event_dict[date].append(event.copy())
 
         return event_dict
 
@@ -318,10 +352,30 @@ class Schedule:
         return (date_time + time_delta).astimezone(pytz.utc)
 
     def _ceil_dt(self, dt, delta):
-        return dt + (datetime.min - dt) % delta
+        return dt + (datetime.datetime.min.replace(tzinfo=TIME_ZONE) - dt) % delta
 
-    def get_message(self):
-        if self.return_message == "Success":
-            return (False, self.return_message)
-        else:
-            return (True, self.return_message)
+    def _repeat_events_parser(self, repeat_str):
+        repeat_days = {
+            0: False,
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+        }
+        day_parser = {"M": 0, "T": 1, "W": 2, "R": 3, "F": 4, "S": 5, "U": 6}
+
+        for char in repeat_str:
+            day_num = day_parser[char]
+            if day_num in repeat_days:
+                repeat_days[day_num] = True
+        print("Repeat Days - ", repeat_days)
+        return repeat_days
+        # M = Monday
+        # T = Tuesday
+        # W = Wednesday
+        # R = Thursday
+        # F = Friday
+        # S = Saturday
+        # U = Sunday
