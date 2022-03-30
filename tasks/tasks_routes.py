@@ -47,7 +47,27 @@ def get_task_by_id(task_id):
         return False
 
 
-# TODO: Make Delete Task and Mark as Do Not Schedule
+def delete_task(task_id):
+    """Delete a task"""
+    result = database.collection("tasks").where("id", "==", task_id).get()
+    if result:
+        for item in result:
+            item.reference.delete()
+        return {"success": True}
+    else:
+        return {"success": False}
+
+
+def cram_task(task_id):
+    """Mark a task as do_not_schedule to indicate cram"""
+    result = database.collection("tasks").where("id", "==", task_id).get()
+
+    if result:
+        result.update({"do_not_schedule": task_id})
+    else:
+        return {"success": False}
+
+    return {"success": True}
 
 
 def get_task_scheduler(user_id):

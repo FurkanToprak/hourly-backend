@@ -57,11 +57,32 @@ def update_task():
     return tasks_routes.update_task_hours(params)
 
 
+
 @app.route("/tasks/getTasks", methods=["POST"])
 def get_user_tasks():
     "Getting all tasks for a specific user with a user id"
     params = request.json
     return tasks_routes.get_user_tasks(params)
+
+@app.route("/tasks/deleteTask", methods=["POST"])
+def delete_task():
+    "Delete tasks with a task id"
+    params = request.json
+    return tasks_routes.delete_task(params["id"])
+
+
+@app.route("/tasks/getTaskById", methods=["POST"])
+def get_task_by_id():
+    "Getting task with a task id"
+    params = request.json
+    return tasks_routes.get_task_by_id(params)
+
+
+@app.route("/tasks/cramTask", methods=["POST"])
+def cram_task():
+    "Mark task as cram"
+    params = request.json
+    return tasks_routes.cram_task(params["id"])
 
 
 @app.route("/events/createEvent", methods=["POST"])
@@ -75,7 +96,24 @@ def create_event():
 def get_events():
     "Getting events with a user id"
     params = request.json
-    return events_routes.get_events(params)
+    return events_routes.get_events(params["id"])
+
+
+@app.route("/events/deleteEvent", methods=["POST"])
+def delete_event():
+    "Delete event with a event id"
+    params = request.json
+    return events_routes.delete_event(params["id"])
+
+
+@app.route("/schedule", methods=["POST"])
+def schedule_tasks():
+    "Auto Scheduler"
+    print("Scheduling")
+    user_id = request.json["id"]
+    sched = schedule.Schedule(user_id)
+    failed, message = sched.get_message()
+    return jsonify(failed=failed, message=message)
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])
