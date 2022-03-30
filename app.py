@@ -93,6 +93,13 @@ def get_events():
     return events_routes.get_events(params["id"])
 
 
+@app.route("/events/deleteEvent", methods=["POST"])
+def delete_event():
+    "Delete event with a event id"
+    params = request.json
+    return events_routes.delete_event(params["id"])
+
+
 @app.route("/schedule", methods=["POST"])
 def schedule_tasks():
     "Auto Scheduler"

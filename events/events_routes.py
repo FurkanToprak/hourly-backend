@@ -31,6 +31,17 @@ def get_events(user_id):
     return {"events": send}
 
 
+def delete_event(event_id):
+    """Delete an event"""
+    result = database.collection("events").where("id", "==", event_id).get()
+    if result:
+        for item in result:
+            item.reference.delete()
+        return {"success": True}
+    else:
+        return {"success": False}
+
+
 def get_events_scheduler(user_id, cur_date):
     """Get events"""
     repeat_events = (

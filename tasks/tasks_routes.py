@@ -50,7 +50,8 @@ def delete_task(task_id):
     """Delete a task"""
     result = database.collection("tasks").where("id", "==", task_id).get()
     if result:
-        result.delete()
+        for item in result:
+            item.reference.delete()
         return {"success": True}
     else:
         return {"success": False}
