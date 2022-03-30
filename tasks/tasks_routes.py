@@ -2,7 +2,8 @@
 from datetime import date
 from tasks.models import Task
 from db_connection import database
-from constants import NOT_COMPLETED
+from constants import NOT_COMPLETED, COMPLETED
+from blocks import blocks_routes
 
 
 def create_task(params):
@@ -38,7 +39,7 @@ def get_task(user_id):
 
 
 def get_task_by_id(task_id):
-    """Get a task"""
+    """Get a task with task id"""
     result = database.collection("tasks").where("id", "==", task_id).get()
     if result:
         return result[0].to_dict()
@@ -77,3 +78,30 @@ def get_task_scheduler(user_id):
         for item in result:
             send[item.to_dict()["id"]] = item.to_dict()
     return send
+
+
+def update_task_hours(params):
+    task_id = params["task_id"]
+    hours = params["hours"]
+
+    task = get_task_by_id(task_id)
+
+    if task["estimated_time"] == (task["completed_time"] + hours):
+        status = completed_task(task_id)
+        if status is False:
+            return {"succuess": False}
+
+    database.collection("tasks").document(task_id).update(
+        {"completed_time": (task["completed_time"] + hours)}
+    )
+    return {"success": True}
+
+
+def completed_task(task_id):
+    """Set the task with the given task id to complete"""
+    task_status = database.collection("tasks").where("id", "==", task_id)["completed"]
+    if task_status == COMPLETED:
+        return False
+    else:
+        database.collection("tasks").document(task_id).update({"completed": COMPLETED})
+        return True
