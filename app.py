@@ -58,7 +58,7 @@ def get_task():
     return tasks_routes.get_task(params["id"])
 
 
-@app.route("/tasks/deleteTasks", methods=["POST"])
+@app.route("/tasks/deleteTask", methods=["POST"])
 def delete_task():
     "Delete tasks with a task id"
     params = request.json
