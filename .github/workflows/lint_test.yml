@@ -6,6 +6,9 @@ on: [push, pull_request]
 
 env:
   FLASK_FIREBASE_JSON: ${{ secrets.FLASK_FIREBASE_JSON }}
+  MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+  MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+  API_KEY: ${{ secrets.API_KEY }}
 
 jobs:
   suite:

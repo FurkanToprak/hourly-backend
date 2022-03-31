@@ -54,8 +54,8 @@ def delete_task(task_id):
         for item in result:
             item.reference.delete()
         return {"success": True}
-    else:
-        return {"success": False}
+
+    return {"success": False}
 
 
 def cram_task(task_id):
