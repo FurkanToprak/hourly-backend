@@ -1,12 +1,12 @@
 """Main Application File"""
 import logging
 import os
-from sched import scheduler
 from flask import Flask, request, jsonify
 from flask_mail import Mail
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
+from scheduling.schedule import Schedule
 from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
@@ -126,7 +126,7 @@ def schedule_tasks():
     "Auto Scheduler"
     print("Scheduling")
     user_id = request.json["id"]
-    sched = scheduler.Schedule(user_id)
+    sched = Schedule(user_id)
     failed, message = sched.get_message()
     return jsonify(failed=failed, message=message)
 

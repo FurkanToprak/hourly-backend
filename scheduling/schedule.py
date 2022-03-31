@@ -1,7 +1,6 @@
 """ Auto Scheduling Algorithm"""
 import datetime
 import itertools
-from pprint import pprint
 from dateutil import parser
 import pytz
 from tasks import tasks_routes
@@ -357,8 +356,8 @@ class Schedule:
 
         return (date_time + time_delta).astimezone(pytz.utc)
 
-    def _ceil_dt(self, dt, delta):
-        return dt + (datetime.datetime.min.replace(tzinfo=TIME_ZONE) - dt) % delta
+    def _ceil_dt(self, d_t, delta):
+        return d_t + (datetime.datetime.min.replace(tzinfo=TIME_ZONE) - d_t) % delta
 
     def _repeat_events_parser(self, repeat_str):
         repeat_days = {
