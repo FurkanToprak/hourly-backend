@@ -1,6 +1,9 @@
 """Main Application File"""
 import logging
+import os
+from sched import scheduler
 from flask import Flask, request, jsonify
+from flask_mail import Mail
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
@@ -11,8 +14,19 @@ from events import events_routes
 
 
 app = Flask(__name__)
+app.config.update(
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.environ["MAIL_USERNAME"],
+    MAIL_PASSWORD=os.environ["MAIL_PASSWORD"],
+    MAIL_DEBUG=False,
+)
+mail = Mail(app)
 app.logger.setLevel(logging.INFO)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
+
+API_KEY = os.environ["API_KEY"]
 
 
 @app.route("/tests/login", methods=["POST"])
@@ -112,7 +126,7 @@ def schedule_tasks():
     "Auto Scheduler"
     print("Scheduling")
     user_id = request.json["id"]
-    sched = schedule.Schedule(user_id)
+    sched = scheduler.Schedule(user_id)
     failed, message = sched.get_message()
     return jsonify(failed=failed, message=message)
 
@@ -140,6 +154,22 @@ def google_auth():
     except Exception as post_error:  # pylint: disable=broad-except
         # Invalid token
         return str(post_error)
+
+
+@app.route("/Groups/SendMail", methods=["POST"])
+def send_mail():
+    """Send Email Function"""
+    params = request.json
+    if params["API_KEY"] == API_KEY:
+        mail.send_message(
+            "Collaborator Found!",
+            sender=os.environ["MAIL_USERNAME"],
+            recipients=[params["email"]],
+            body="We found you a collaborator!",
+        )
+        return "Mail sent"
+    else:
+        return "Invalid API Key"
 
 
 @app.route("/")
