@@ -153,11 +153,18 @@ def create_group():
 
 # Present only for testing purposes
 # Will be called internally
-@app.route("/groups/getGroupTasks", methods=["POST"])
+@app.route("/groups/getTasks", methods=["POST"])
 def get_group_tasks():
     """Get Group Tasks"""
     params = request.json
     return groups_routes.get_group_tasks(group_id=params["group_id"])
+
+
+@app.route("/groups/getStats", methods=["POST"])
+def get_group_stats():
+    """Get Group Stats"""
+    params = request.json
+    return groups_routes.calculate_stats(group_id=params["group_id"])
 
 
 # Present only for testing purposes
