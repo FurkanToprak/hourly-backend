@@ -41,6 +41,19 @@ def leave_group(user_id, group_id):
     return {"success": True}
 
 
+def get_users_groups(user_id):
+    """Get all gorups a user is in"""
+    result = (
+        database.collection("groups").where("user_ids", "array_contains", user_id).get()
+    )
+
+    send = []
+    for item in result:
+        send.append(item.to_dict())
+
+    return {"groups": send}
+
+
 def calculate_stats(group_id):
     """Calculate group statistics"""
     today = datetime.today().date()
