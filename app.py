@@ -41,7 +41,7 @@ def google_auth():
         user_email = idinfo["email"]
 
         return user_routes.login(user_email, user_name, start_day, end_day)
-    except Exception as post_error:  # pylint: disable=broad-except
+    except Exception as post_error:
         # Invalid token
         return str(post_error)
 
@@ -199,13 +199,16 @@ def get_group_tasks():
 def send_mail():
     """Send Email Function"""
     params = request.json
-    mail.send_message(
-        "Collaborator Found!",
-        sender=os.environ["MAIL_USERNAME"],
-        recipients=[params["email"]],
-        body="We found you a collaborator!",
-    )
-    return "Mail sent"
+    try:
+        mail.send_message(
+            "Collaborator Found!",
+            sender=os.environ["MAIL_USERNAME"],
+            recipients=[params["email"]],
+            body="We found you a collaborator!",
+        )
+        return {"success": True}
+    except Exception:
+        return {"success": False}
 
 
 @app.route("/")

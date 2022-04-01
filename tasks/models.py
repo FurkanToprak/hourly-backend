@@ -4,7 +4,8 @@
 class Task:
     """Class for Item objects"""
 
-    def structure(self):
+    @staticmethod
+    def structure():
         """task structure"""
         task = {
             "id": "",

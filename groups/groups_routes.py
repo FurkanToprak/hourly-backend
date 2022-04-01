@@ -20,7 +20,7 @@ def create_group(params):
     group["description"] = params["description"]
 
     database.collection("groups").add(group, group_id)
-    return "Group Created"
+    return {"success": True}
 
 
 def join_group(user_id, group_id):

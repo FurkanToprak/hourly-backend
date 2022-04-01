@@ -4,7 +4,8 @@
 class Group:
     """Class for Group objects"""
 
-    def structure(self):
+    @staticmethod
+    def structure():
         """Group structure"""
         group = {
             "id": "",

@@ -4,7 +4,8 @@
 class Event:
     """Class for Event objects"""
 
-    def structure(self):
+    @staticmethod
+    def structure():
         """Event structure"""
         event = {
             "id": "",

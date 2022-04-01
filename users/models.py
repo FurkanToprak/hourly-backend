@@ -4,7 +4,8 @@
 class User:
     """Creating a user object"""
 
-    def structure(self):
+    @staticmethod
+    def structure():
         """Creating a user object"""
         user = {"name": "", "email": "", "id": "", "startOfDay": "", "endOfDay": ""}
         return user

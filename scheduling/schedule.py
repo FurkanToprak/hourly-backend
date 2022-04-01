@@ -108,8 +108,6 @@ class Schedule:
 
         event_dict = self._parse_events()
 
-        print(event_dict)
-
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
             self.time_slots[date][0 : int(wake_time)] = itertools.repeat(
@@ -375,7 +373,6 @@ class Schedule:
             day_num = day_parser[char]
             if day_num in repeat_days:
                 repeat_days[day_num] = True
-        print("Repeat Days - ", repeat_days)
         return repeat_days
         # M = Monday
         # T = Tuesday

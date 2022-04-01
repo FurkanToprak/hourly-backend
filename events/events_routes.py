@@ -18,7 +18,7 @@ def create_event(params):
     event["repeat"] = params["repeat"]
 
     database.collection("events").add(event, event_id)
-    return "Event Created"
+    return {"success": True}
 
 
 def get_events(user_id):
@@ -38,8 +38,8 @@ def delete_event(event_id):
         for item in result:
             item.reference.delete()
         return {"success": True}
-    else:
-        return {"success": False}
+
+    return {"success": False}
 
 
 def get_events_scheduler(user_id, cur_date):

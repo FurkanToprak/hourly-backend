@@ -22,7 +22,7 @@ def create_block(params):
     block["completed"] = NOT_COMPLETED
 
     database.collection("blocks").add(block, blocks_id)
-    return "Block Created"
+    return {"success": True}
 
 
 def get_block_by_id(block_id):
@@ -97,7 +97,7 @@ def _merge_blocks(block_list):
                 i += 1
         merged_tasks.extend(group_list)
 
-    for i in range(len(merged_tasks)):
+    for i, _ in enumerate(merged_tasks):
         if "merge_count" not in merged_tasks[i]:
             merged_tasks[i]["merge_count"] = 0
 

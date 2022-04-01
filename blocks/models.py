@@ -4,7 +4,8 @@
 class Block:
     """Class for Block objects"""
 
-    def structure(self):
+    @staticmethod
+    def structure():
         """block structure"""
         block = {
             "id": "",

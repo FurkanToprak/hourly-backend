@@ -42,8 +42,8 @@ def get_task_by_id(task_id):
     result = database.collection("tasks").where("id", "==", task_id).get()
     if result:
         return result[0].to_dict()
-    else:
-        return False
+
+    return False
 
 
 def delete_task(task_id):
@@ -59,10 +59,10 @@ def delete_task(task_id):
 
 def cram_task(task_id):
     """Mark a task as do_not_schedule to indicate cram"""
-    result = database.collection("tasks").where("id", "==", task_id).get()
+    result = database.collection("tasks").document(task_id)
 
     if result:
-        result.update({"do_not_schedule": task_id})
+        result.update({"do_not_schedule": True})
     else:
         return {"success": False}
 
@@ -82,26 +82,28 @@ def get_task_scheduler(user_id):
 def update_task_hours(params):
     """Update a task's completed hours"""
     task_id = params["task_id"]
-    hours = params["hours"]
+    hours = float(params["hours"])
 
     task = get_task_by_id(task_id)
 
-    if task["estimated_time"] == (task["completed_time"] + hours):
+    if float(task["estimated_time"]) == (float(task["completed_time"]) + hours):
         status = completed_task(task_id)
         if status is False:
-            return {"succuess": False}
+            return {"success": False}
 
     database.collection("tasks").document(task_id).update(
-        {"completed_time": (task["completed_time"] + hours)}
+        {"completed_time": (float(task["completed_time"]) + hours)}
     )
     return {"success": True}
 
 
 def completed_task(task_id):
     """Set the task with the given task id to complete"""
-    task_status = database.collection("tasks").where("id", "==", task_id)["completed"]
+    task_status = int(
+        database.collection("tasks").document(task_id).get().to_dict()["completed"]
+    )
     if task_status == COMPLETED:
         return False
-    else:
-        database.collection("tasks").document(task_id).update({"completed": COMPLETED})
-        return True
+
+    database.collection("tasks").document(task_id).update({"completed": COMPLETED})
+    return True
