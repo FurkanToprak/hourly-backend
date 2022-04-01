@@ -3,7 +3,6 @@ from datetime import date
 from tasks.models import Task
 from db_connection import database
 from constants import NOT_COMPLETED, COMPLETED
-from blocks import blocks_routes
 
 
 def create_task(params):

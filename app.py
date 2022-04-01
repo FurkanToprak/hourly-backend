@@ -11,6 +11,7 @@ from users import user_routes
 from tasks import tasks_routes
 from blocks import blocks_routes
 from events import events_routes
+from groups import groups_routes
 
 
 app = Flask(__name__)
@@ -26,18 +27,23 @@ mail = Mail(app)
 app.logger.setLevel(logging.INFO)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 
-API_KEY = os.environ["API_KEY"]
 
-
-@app.route("/tests/login", methods=["POST"])
-def login():
-    """Testing login"""
+@app.route("/google_auth", methods=["POST"])
+def google_auth():
+    """Verifies Google OAuth protocols"""
     params = request.json
-    email = params["email"]
-    name = params["name"]
+    token = params["token"]
+    user_name = params["name"]
     start_day = params["startOfDay"]
     end_day = params["endOfDay"]
-    return user_routes.login(email, name, start_day, end_day)
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request())
+        user_email = idinfo["email"]
+
+        return user_routes.login(user_email, user_name, start_day, end_day)
+    except Exception as post_error:  # pylint: disable=broad-except
+        # Invalid token
+        return str(post_error)
 
 
 @app.route("/users/getSleep", methods=["POST"])
@@ -138,38 +144,67 @@ def get_block():
     return blocks_routes.get_block(params)
 
 
-@app.route("/google_auth", methods=["POST"])
-def google_auth():
-    """Verifies Google OAuth protocols"""
+@app.route("/groups/createGroup", methods=["POST"])
+def create_group():
+    """Create Group Function"""
     params = request.json
-    token = params["token"]
-    user_name = params["name"]
-    start_day = params["startOfDay"]
-    end_day = params["endOfDay"]
-    try:
-        idinfo = id_token.verify_oauth2_token(token, requests.Request())
-        user_email = idinfo["email"]
-
-        return user_routes.login(user_email, user_name, start_day, end_day)
-    except Exception as post_error:  # pylint: disable=broad-except
-        # Invalid token
-        return str(post_error)
+    return groups_routes.create_group(params)
 
 
-@app.route("/Groups/SendMail", methods=["POST"])
+@app.route("/groups/getUsersGroups", methods=["POST"])
+def get_users_groups():
+    """Get all of a users groups"""
+    params = request.json
+    return groups_routes.get_users_groups(user_id=params["user_id"])
+
+
+@app.route("/groups/joinGroup", methods=["POST"])
+def join_group():
+    """Join Group Function"""
+    params = request.json
+    return groups_routes.join_group(
+        user_id=params["user_id"], group_id=params["group_id"]
+    )
+
+
+@app.route("/groups/leaveGroup", methods=["POST"])
+def leave_group():
+    """Leave Group Function"""
+    params = request.json
+    return groups_routes.leave_group(
+        user_id=params["user_id"], group_id=params["group_id"]
+    )
+
+
+# Present only for testing purposes
+# Will be called internally
+@app.route("/groups/getTasks", methods=["POST"])
+def get_group_tasks():
+    """Get Group Tasks"""
+    params = request.json
+    return groups_routes.get_group_tasks(group_id=params["group_id"])
+
+
+@app.route("/groups/getStats", methods=["POST"])
+def get_group_stats():
+    """Get Group Stats"""
+    params = request.json
+    return groups_routes.calculate_stats(group_id=params["group_id"])
+
+
+# Present only for testing purposes
+# Will be called internally
+@app.route("/groups/sendMail", methods=["POST"])
 def send_mail():
     """Send Email Function"""
     params = request.json
-    if params["API_KEY"] == API_KEY:
-        mail.send_message(
-            "Collaborator Found!",
-            sender=os.environ["MAIL_USERNAME"],
-            recipients=[params["email"]],
-            body="We found you a collaborator!",
-        )
-        return "Mail sent"
-    else:
-        return "Invalid API Key"
+    mail.send_message(
+        "Collaborator Found!",
+        sender=os.environ["MAIL_USERNAME"],
+        recipients=[params["email"]],
+        body="We found you a collaborator!",
+    )
+    return "Mail sent"
 
 
 @app.route("/")

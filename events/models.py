@@ -1,8 +1,8 @@
-"""Schema for Blocks"""
+"""Schema for Event"""
 
 
 class Event:
-    """Class for Block objects"""
+    """Class for Event objects"""
 
     def structure(self):
         """Event structure"""
