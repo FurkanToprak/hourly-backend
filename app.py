@@ -50,7 +50,7 @@ def google_auth():
 def get_sleep():
     """Get Users Sleep Schedule"""
     params = request.json
-    user_id = params["id"]
+    user_id = params["user_id"]
     return user_routes.get_sleep(user_id)
 
 
@@ -58,7 +58,7 @@ def get_sleep():
 def update_sleep():
     """Update Users Sleep Schedule"""
     params = request.json
-    user_id = params["id"]
+    user_id = params["user_id"]
     start_day = params["startOfDay"]
     end_day = params["endOfDay"]
     return user_routes.update_sleep(user_id, start_day, end_day)
@@ -82,28 +82,28 @@ def update_task():
 def delete_task():
     "Delete tasks with a task id"
     params = request.json
-    return tasks_routes.delete_task(params["id"])
+    return tasks_routes.delete_task(params["task_id"])
 
 
 @app.route("/tasks/getUserTasks", methods=["POST"])
 def get_user_tasks():
     "Getting user tasks with a user id"
     params = request.json
-    return tasks_routes.get_user_tasks(params)
+    return tasks_routes.get_tasks(user_id=params["user_id"])
 
 
 @app.route("/tasks/getTaskById", methods=["POST"])
 def get_task_by_id():
     "Getting task with a task id"
     params = request.json
-    return tasks_routes.get_task_by_id(params["id"])
+    return tasks_routes.get_task_by_id(params["task_id"])
 
 
 @app.route("/tasks/cramTask", methods=["POST"])
 def cram_task():
     "Mark task as cram"
     params = request.json
-    return tasks_routes.cram_task(params["id"])
+    return tasks_routes.cram_task(params["task_id"])
 
 
 @app.route("/events/createEvent", methods=["POST"])
@@ -117,23 +117,24 @@ def create_event():
 def get_events():
     "Getting events with a user id"
     params = request.json
-    return events_routes.get_events(params["id"])
+    return events_routes.get_events(params["user_id"])
 
 
 @app.route("/events/deleteEvent", methods=["POST"])
 def delete_event():
     "Delete event with a event id"
     params = request.json
-    return events_routes.delete_event(params["id"])
+    return events_routes.delete_event(params["event_id"])
 
 
 @app.route("/schedule", methods=["POST"])
 def schedule_tasks():
     "Auto Scheduler"
     print("Scheduling")
-    user_id = request.json["id"]
-    sched = Schedule(user_id)
-    failed, message = sched.get_message()
+    user_id = request.json["user_id"]
+    schedule = Schedule(user_id)
+    schedule.scheduler()
+    failed, message = schedule.get_message()
     return jsonify(failed=failed, message=message)
 
 
@@ -141,7 +142,7 @@ def schedule_tasks():
 def get_block():
     "Getting blocks with a user id"
     params = request.json
-    return blocks_routes.get_block(params)
+    return blocks_routes.get_block(user_id=params["user_id"])
 
 
 @app.route("/groups/createGroup", methods=["POST"])
@@ -176,6 +177,13 @@ def leave_group():
     )
 
 
+@app.route("/groups/getStats", methods=["POST"])
+def get_group_stats():
+    """Get Group Stats"""
+    params = request.json
+    return groups_routes.calculate_stats(group_id=params["group_id"])
+
+
 # Present only for testing purposes
 # Will be called internally
 @app.route("/groups/getTasks", methods=["POST"])
@@ -183,13 +191,6 @@ def get_group_tasks():
     """Get Group Tasks"""
     params = request.json
     return groups_routes.get_group_tasks(group_id=params["group_id"])
-
-
-@app.route("/groups/getStats", methods=["POST"])
-def get_group_stats():
-    """Get Group Stats"""
-    params = request.json
-    return groups_routes.calculate_stats(group_id=params["group_id"])
 
 
 # Present only for testing purposes

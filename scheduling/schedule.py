@@ -28,11 +28,11 @@ class Schedule:
         self.time_slots = None
         self.user_id = user_id
         self.tasks = []
+        self.cram_tasks = []
         self.last_task = None
         self.num_days = 0
         self.batch_writes = 0
         self.return_message = "Success"
-        self.scheduler()
 
     def scheduler(self):
         """Main scheduling flow"""

@@ -1,7 +1,7 @@
 """ Routes for events """
+from dateutil import parser
 from events.models import Event
 from db_connection import database
-from dateutil import parser
 
 
 def create_event(params):

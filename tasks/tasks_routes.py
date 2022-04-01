@@ -27,7 +27,7 @@ def create_task(params):
     return task
 
 
-def get_task(user_id):
+def get_tasks(user_id):
     """Get all tasks for a user"""
     result = database.collection("tasks").where("user_id", "==", user_id).get()
     send = []
@@ -80,6 +80,7 @@ def get_task_scheduler(user_id):
 
 
 def update_task_hours(params):
+    """Update a task's completed hours"""
     task_id = params["task_id"]
     hours = params["hours"]
 
