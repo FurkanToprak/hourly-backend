@@ -151,6 +151,24 @@ def create_group():
     return groups_routes.create_group(params)
 
 
+@app.route("/groups/joinGroup", methods=["POST"])
+def join_group():
+    """Join Group Function"""
+    params = request.json
+    return groups_routes.join_group(
+        user_id=params["user_id"], group_id=params["group_id"]
+    )
+
+
+@app.route("/groups/leaveGroup", methods=["POST"])
+def leave_group():
+    """Leave Group Function"""
+    params = request.json
+    return groups_routes.leave_group(
+        user_id=params["user_id"], group_id=params["group_id"]
+    )
+
+
 # Present only for testing purposes
 # Will be called internally
 @app.route("/groups/getTasks", methods=["POST"])

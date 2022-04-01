@@ -15,6 +15,7 @@ python-dotenv = "*"
 python-dateutil = "*"
 pytz = "*"
 flask-mail = "*"
+google-cloud-firestore = "*"
 
 [dev-packages]
 black = "*"

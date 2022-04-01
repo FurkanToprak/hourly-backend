@@ -1,10 +1,11 @@
 """Routes for Groups"""
 from datetime import datetime, timedelta
 from statistics import mean
+from google.cloud import firestore
 from dateutil.parser import parse
 from db_connection import database
 from groups.models import Group
-from constants import COMPLETED, NOT_COMPLETED
+from constants import COMPLETED
 
 
 def create_group(params):
@@ -20,6 +21,24 @@ def create_group(params):
 
     database.collection("groups").add(group, group_id)
     return "Group Created"
+
+
+def join_group(user_id, group_id):
+    """Add user to group"""
+    group_ref = database.collection("groups").document(group_id)
+
+    group_ref.update({"user_ids": firestore.ArrayUnion([user_id])})
+
+    return {"success": True}
+
+
+def leave_group(user_id, group_id):
+    """Remove user from group"""
+    group_ref = database.collection("groups").document(group_id)
+
+    group_ref.update({"user_ids": firestore.ArrayRemove([user_id])})
+
+    return {"success": True}
 
 
 def calculate_stats(group_id):
