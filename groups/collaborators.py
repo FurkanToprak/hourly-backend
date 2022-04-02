@@ -61,7 +61,7 @@ class Collab:
             day_user_1 = self.time_slots_1[date]
             day_user_2 = self.time_slots_2[date]
 
-            for j in range(len(day_user_1) // 2):
+            for j in range(len(day_user_1) // 2), len(day_user_1):
                 if day_user_1[j] == (None, None):
                     day_user_1[j] = ("SLEEP", None)
                 if day_user_2[j] == (None, None):
