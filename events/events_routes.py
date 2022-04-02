@@ -1,4 +1,5 @@
 """ Routes for events """
+from datetime import datetime
 from dateutil import parser
 from events.models import Event
 from db_connection import database
@@ -22,13 +23,22 @@ def create_event(params):
 
 
 def get_events(user_id):
-    """Get events"""
-    result = database.collection("events").where("user_id", "==", user_id).get()
-    send = []
-    if result:
-        for item in result:
-            send.append(item.to_dict())
-    return {"events": send}
+    """Get all of a users events"""
+    non_repeat_events, repeat_events = get_current_events(
+        user_id=user_id, cur_date=datetime.today().date()
+    )
+
+    non_repeat_send = []
+    if non_repeat_events:
+        for _, item in enumerate(non_repeat_events):
+            non_repeat_send.append(item.to_dict())
+
+    repeat_send = []
+    if repeat_events:
+        for _, item in enumerate(repeat_events):
+            repeat_send.append(item.to_dict())
+
+    return {"events": (non_repeat_send + repeat_send)}
 
 
 def delete_event(event_id):
@@ -43,7 +53,24 @@ def delete_event(event_id):
 
 
 def get_events_scheduler(user_id, cur_date):
-    """Get events"""
+    """Get events for scheduler"""
+
+    repeat_events, non_repeat_events = get_current_events(user_id, cur_date)
+    non_repeat_send = {}
+    if non_repeat_events:
+        for i, item in enumerate(non_repeat_events):
+            non_repeat_send[i] = item.to_dict()
+
+    repeat_send = {}
+    if repeat_events:
+        for i, item in enumerate(repeat_events):
+            repeat_send[i] = item.to_dict()
+
+    return non_repeat_send, repeat_send
+
+
+def get_current_events(user_id, cur_date):
+    """Get all repeating events and events >= current date"""
     repeat_events = (
         database.collection("events")
         .where("user_id", "==", user_id)
@@ -62,14 +89,5 @@ def get_events_scheduler(user_id, cur_date):
         for item in non_repeat_events
         if parser.parse(item.to_dict()["start_time"]).date() >= cur_date
     ]
-    non_repeat_send = {}
-    if non_repeat_events:
-        for i, item in enumerate(non_repeat_events):
-            non_repeat_send[i] = item.to_dict()
 
-    repeat_send = {}
-    if repeat_events:
-        for i, item in enumerate(repeat_events):
-            repeat_send[i] = item.to_dict()
-
-    return non_repeat_send, repeat_send
+    return non_repeat_events, repeat_events

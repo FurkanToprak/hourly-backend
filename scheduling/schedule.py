@@ -2,6 +2,7 @@
 import datetime
 import itertools
 from dateutil import parser
+from dateutil.relativedelta import relativedelta
 import pytz
 from tasks import tasks_routes
 from users import user_routes
@@ -29,10 +30,9 @@ class Schedule:
         self.user_id = user_id
         self.tasks = []
         self.cram_tasks = []
-        self.last_task = None
         self.num_days = 0
         self.batch_writes = 0
-        self.return_message = "Success"
+        self.scheduler_success = True
 
     def scheduler(self):
         """Main scheduling flow"""
@@ -45,21 +45,39 @@ class Schedule:
             value for value in task_list.values() if value["do_not_schedule"]
         ]
 
+        self.set_num_days()
+
+        self.build_time_slots()
+
+        if len(self.tasks) == 0:
+            self.write_events_and_sleep()
+            delete_blocks(self.user_id)
+            self.define_blocks()
+        else:
+            self.write_events_and_sleep()
+            enough_time = self.schedule_tasks()
+
+            if enough_time:
+                delete_blocks(self.user_id)
+                self.define_blocks()
+            else:
+                self.scheduler_success = False
+
+    def set_num_days(self, manually_set=0):
+        if manually_set > 0:
+            self.num_days = manually_set
         if len(self.tasks) == 0:
             self.num_days = 10
         else:
-            self.last_task = max(
-                self.tasks, key=lambda x: self._utc_to_local(x["due_date"])
-            )
-            self.num_days = (
-                self._utc_to_local(self.last_task["due_date"]) - CURRENT_TIME
-            )
+            last_task = max(self.tasks, key=lambda x: self._utc_to_local(x["due_date"]))
+            self.num_days = self._utc_to_local(last_task["due_date"]) - CURRENT_TIME
 
             if self.num_days.seconds > 0:
                 self.num_days = self.num_days.days + 1
             else:
                 self.num_days = self.num_days.days
 
+    def build_time_slots(self):
         self.time_slots = {}
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
@@ -67,37 +85,11 @@ class Schedule:
             for _ in range(UNITS_PER_DAY):
                 self.time_slots[date].append((None, None))
 
-        if len(self.tasks) == 0:
-            self.no_tasks_present()
-        else:
-            print("Writing Events and Sleep")
-            self.write_events_and_sleep()
-            print("Scheduling Tasks")
-            enough_time = self.schedule_tasks()
-
-            if enough_time:
-                # Delete old blocks
-                delete_blocks(self.user_id)
-                print("Defining Blocks")
-                self.define_blocks()
-                print("Done")
-            else:
-                self.return_message = "Not enough time to schedule tasks"
-
-    def no_tasks_present(self):
-        print("Writing Events and Sleep")
-        self.write_events_and_sleep()
-        self.return_message = "Success"
-        delete_blocks(self.user_id)
-        print("Defining Blocks")
-        self.define_blocks()
-        print("Done")
-
     def get_message(self):
-        if self.return_message == "Success":
-            return (False, self.return_message)
+        if self.scheduler_success:
+            return (False, "Success")
         else:
-            return (True, self.return_message)
+            return (True, "Not enough time to schedule tasks")
 
     def write_events_and_sleep(self):
         """Write User's Sleep Schedule and Events to Time Slots"""
@@ -236,7 +228,7 @@ class Schedule:
                         block["task_id"] = slot[1][1]["id"]
                         block["name"] = slot[1][1]["name"]
 
-                        start_time = self._index_to_dt(index, date)
+                        start_time = self.index_to_dt(index, date)
                         block["start_time"] = start_time
                         block["end_time"] = start_time + datetime.timedelta(
                             minutes=TIME_UNIT
@@ -294,7 +286,18 @@ class Schedule:
 
             for i in range(self.num_days):
                 date = CURRENT_TIME.date() + datetime.timedelta(days=i)
-                if repeat_days[date.weekday()]:
+                if repeat_days == "MONTHLY" and date.day == start_time.date().day:
+                    event["start_time"] = start_time.replace(
+                        day=date.day, month=date.month, year=date.year
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    event["end_time"] = end_time.replace(
+                        day=date.day, month=date.month, year=date.year
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    if date not in event_dict:
+                        event_dict[date] = [event.copy()]
+                    else:
+                        event_dict[date].append(event.copy())
+                elif repeat_days[date.weekday()]:
                     event["start_time"] = start_time.replace(
                         day=date.day, month=date.month, year=date.year
                     ).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -348,7 +351,7 @@ class Schedule:
         utc_dt = parser.parse(utc_string)
         return utc_dt.replace(tzinfo=pytz.utc).astimezone(TIME_ZONE)
 
-    def _index_to_dt(self, index, date):
+    def index_to_dt(self, index, date):
         time_delta = datetime.timedelta(minutes=index * TIME_UNIT)
         date_time = datetime.datetime(year=date.year, month=date.month, day=date.day)
 
@@ -358,6 +361,9 @@ class Schedule:
         return d_t + (datetime.datetime.min.replace(tzinfo=TIME_ZONE) - d_t) % delta
 
     def _repeat_events_parser(self, repeat_str):
+        if repeat_str == "MONTHLY":
+            return repeat_str
+
         repeat_days = {
             0: False,
             1: False,

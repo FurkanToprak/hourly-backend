@@ -159,6 +159,13 @@ def get_users_groups():
     return groups_routes.get_users_groups(user_id=params["user_id"])
 
 
+@app.route("/groups/getUsersLabels", methods=["POST"])
+def get_users_labels():
+    """Get all of a users groups"""
+    params = request.json
+    return groups_routes.get_labels(user_id=params["user_id"])
+
+
 @app.route("/groups/joinGroup", methods=["POST"])
 def join_group():
     """Join Group Function"""
@@ -184,6 +191,37 @@ def get_group_stats():
     return groups_routes.calculate_stats(group_id=params["group_id"])
 
 
+@app.route("/groups/getCollaborators", methods=["POST"])
+def get_group_collaborators():
+    """Get group members searching for a collaborator"""
+    params = request.json
+    return groups_routes.get_collaborators(group_id=params["group_id"])
+
+
+@app.route("/groups/placeCollaborator", methods=["POST"])
+def place_collaborators():
+    """Place user in collaborator list"""
+    params = request.json
+    return groups_routes.place_collaborator(
+        user_id=params["user_id"],
+        user_name=params["user_name"],
+        group_id=params["group_id"],
+    )
+
+
+@app.route("/groups/checkCollaborators", methods=["POST"])
+def check_collaborators():
+    """Check user collab compatiblity then create events and notify"""
+    params = request.json
+    return groups_routes.check_collaborators(
+        user_id_1=params["user_id_1"],
+        user_id_2=params["user_id_2"],
+        name_1=params["name_1"],
+        name_2=params["name_2"],
+        group_id=params["group_id"],
+    )
+
+
 # Present only for testing purposes
 # Will be called internally
 @app.route("/groups/getTasks", methods=["POST"])
@@ -195,7 +233,6 @@ def get_group_tasks():
 
 # Present only for testing purposes
 # Will be called internally
-@app.route("/groups/sendMail", methods=["POST"])
 def send_mail():
     """Send Email Function"""
     params = request.json
