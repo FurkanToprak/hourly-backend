@@ -5,6 +5,7 @@ from google.cloud import firestore
 from dateutil.parser import parse
 from db_connection import database
 from groups.models import Group
+from groups.collaborators import Collab
 from constants import COMPLETED
 
 
@@ -41,8 +42,49 @@ def leave_group(user_id, group_id):
     return {"success": True}
 
 
+def get_collaborators(group_id):
+    """Get all people looking for a collaborator"""
+    group = database.collection("groups").document(group_id).get().to_dict()
+    return {"collaborators": group["collaborators"]}
+
+
+def place_collaborator(user_id, user_name, group_id):
+    """Add user to collaborator list"""
+    group_ref = database.collection("groups").document(group_id)
+
+    group_ref.update(
+        {
+            "collaborators": firestore.ArrayUnion(
+                [{"user_id": user_id, "user_name": user_name}]
+            )
+        }
+    )
+
+    return {"success": True}
+
+
+def check_collaborators(group_id, user_id_1, user_id_2, name_1, name_2):
+    """Check if two users can collaborate. If so, make events"""
+    collab = Collab(
+        user_id_1=user_id_1, user_id_2=user_id_2, name_1=name_1, name_2=name_2
+    )
+
+    if collab.run():
+        group_ref = database.collection("groups").document(group_id)
+        group_ref.update(
+            {
+                "collaborators": firestore.ArrayRemove(
+                    [{"user_id": user_id_1, "user_name": name_1}]
+                )
+            }
+        )
+        return {"success": True}
+
+    return {"success": False}
+
+
 def get_users_groups(user_id):
-    """Get all gorups a user is in"""
+    """Get all groups a user is in"""
     result = (
         database.collection("groups").where("user_ids", "array_contains", user_id).get()
     )
@@ -52,6 +94,17 @@ def get_users_groups(user_id):
         send.append(item.to_dict())
 
     return {"groups": send}
+
+
+def get_labels(user_id):
+    """Get all group names for a user, for labels"""
+    groups = get_users_groups(user_id=user_id)["groups"]
+
+    labels = []
+    for group in groups:
+        labels.append(group["name"])
+
+    return {"labels": labels}
 
 
 def calculate_stats(group_id):
@@ -87,8 +140,10 @@ def calculate_stats(group_id):
             comp_task_count += 1
         else:
             incomp_task_count += 1
-
-    average_hours = mean(estimated_hours)
+    if estimated_hours:
+        average_hours = mean(estimated_hours)
+    else:
+        average_hours = 0
 
     return {
         "average_hours": average_hours,
@@ -102,10 +157,10 @@ def calculate_stats(group_id):
 
 def get_group_tasks(group_id, start_day=datetime.today().date()):
     """Get all tasks for a group"""
-    user_ids = database.collection("groups").document(group_id).get().to_dict()
-    user_ids = user_ids["user_ids"]
+    group = database.collection("groups").document(group_id).get().to_dict()
+    group_name = group["name"]
 
-    result = database.collection("tasks").where("user_id", "in", user_ids).get()
+    result = database.collection("tasks").where("label", "==", group_name).get()
 
     send = []
     if result:

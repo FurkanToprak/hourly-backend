@@ -12,5 +12,6 @@ class Group:
             "user_ids": [],
             "name": "",
             "description": "",
+            "collaborators": [],
         }
         return group
