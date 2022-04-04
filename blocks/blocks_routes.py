@@ -107,10 +107,10 @@ def _merge_blocks(block_list):
             if group_list[i]["end_time"] == group_list[i + 1]["start_time"]:
                 group_list[i]["end_time"] = group_list[i + 1]["end_time"]
 
-                if "merge_count" in group_list[i]:
-                    group_list[i]["merge_count"] += 1
+                if "hours" in group_list[i]:
+                    group_list[i]["hours"] += 0.5
                 else:
-                    group_list[i]["merge_count"] = 1
+                    group_list[i]["hours"] = 1
 
                 group_list.pop(i + 1)
             else:
@@ -118,8 +118,8 @@ def _merge_blocks(block_list):
         merged_tasks.extend(group_list)
 
     for i, _ in enumerate(merged_tasks):
-        if "merge_count" not in merged_tasks[i]:
-            merged_tasks[i]["merge_count"] = 0
+        if "hours" not in merged_tasks[i]:
+            merged_tasks[i]["hours"] = 0.5
 
     return event_list + merged_tasks
 
