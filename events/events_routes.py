@@ -1,5 +1,5 @@
 """ Routes for events """
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil import parser
 import pytz
 from events.models import Event
@@ -84,10 +84,15 @@ def get_current_events(user_id, cur_date):
         .get()
     )
 
+    month_prior = cur_date - timedelta(days=30)
+    month_later = cur_date + timedelta(days=30)
+
     non_repeat_events = [
         item
         for item in non_repeat_events
-        if utc_to_local(item.to_dict()["start_time"]).date() >= cur_date
+        if month_prior
+        <= utc_to_local(item.to_dict()["start_time"]).date()
+        <= month_later
     ]
 
     return non_repeat_events, repeat_events

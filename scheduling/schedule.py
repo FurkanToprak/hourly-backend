@@ -97,7 +97,7 @@ class Schedule:
             sleep_times["startOfDay"], sleep_times["endOfDay"]
         )
 
-        event_dict = self._parse_events()
+        self.event_dict = self._parse_events()
 
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
@@ -108,8 +108,8 @@ class Schedule:
                 ("SLEEP", None), (int(sleep_time))
             )
 
-            if date in event_dict:
-                for event in event_dict[date]:
+            if date in self.event_dict:
+                for event in self.event_dict[date]:
                     start_units = event["start_units"]
                     end_units = event["end_units"]
                     self.time_slots[date][
@@ -201,26 +201,8 @@ class Schedule:
             day = self.time_slots[date]
 
             if day[0][0] == "NO_SKIP":
-                last_written_block = None
                 for index, slot in enumerate(day):
-                    if slot[0] == "EVENT":
-                        if slot[1] != last_written_block:
-                            block = Block().structure()
-                            block["user_ids"] = [self.user_id]
-                            block["type"] = "EVENT"
-                            block["name"] = slot[1]["name"]
-                            block["start_time"] = self._utc_to_local(
-                                slot[1]["start_time"]
-                            ).astimezone(pytz.utc)
-                            block["end_time"] = self._utc_to_local(
-                                slot[1]["end_time"]
-                            ).astimezone(pytz.utc)
-                            self._batch_create_blocks(db_batch, block)
-
-                            last_written_block = slot[1]
-                        else:
-                            continue
-                    elif slot[0] == "TASK":
+                    if slot[0] == "TASK":
                         block = Block().structure()
                         block["user_ids"] = [self.user_id]
                         block["type"] = "TASK"
@@ -236,6 +218,20 @@ class Schedule:
                         self._batch_create_blocks(db_batch, block)
                     else:
                         continue
+
+        for date, event_list in self.event_dict.items():
+            for event in event_list:
+                block = Block().structure()
+                block["user_ids"] = [self.user_id]
+                block["type"] = "EVENT"
+                block["name"] = event["name"]
+                block["start_time"] = self._utc_to_local(
+                    event["start_time"]
+                ).astimezone(pytz.utc)
+                block["end_time"] = self._utc_to_local(event["end_time"]).astimezone(
+                    pytz.utc
+                )
+                self._batch_create_blocks(db_batch, block)
 
         if self.batch_writes > 0:
             db_batch.commit()
@@ -283,7 +279,7 @@ class Schedule:
 
             repeat_days = self._repeat_events_parser(event["repeat"])
 
-            for i in range(self.num_days):
+            for i in range(-30, 31):
                 date = CURRENT_TIME.date() + datetime.timedelta(days=i)
                 if repeat_days == "MONTHLY" and date.day == start_time.date().day:
                     event["start_time"] = start_time.replace(

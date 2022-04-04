@@ -78,6 +78,16 @@ def update_task():
     return tasks_routes.update_task_hours(params)
 
 
+@app.route("/tasks/completeTask", methods=["POST"])
+def complete_task():
+    "Mark a task as entirely complete"
+    params = request.json
+    if tasks_routes.completed_task(task_id=params["task_id"]):
+        return {"success": True}
+    else:
+        return {"success": False}
+
+
 @app.route("/tasks/deleteTask", methods=["POST"])
 def delete_task():
     "Delete tasks with a task id"

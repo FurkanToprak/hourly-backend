@@ -65,11 +65,11 @@ def delete_blocks(user_id):
     db_batch = database.batch()
     for item in result:
         db_batch.delete(item.reference)
-
     db_batch.commit()
 
 
 def expired_sub_tasks(user_id):
+    """Get all blocks that are expired"""
     blocks = get_blocks(user_id=user_id)["blocks"]
     cur_time = (
         datetime.datetime.now(datetime.timezone.utc)

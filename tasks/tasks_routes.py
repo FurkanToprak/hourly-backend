@@ -106,4 +106,12 @@ def completed_task(task_id):
         return False
 
     database.collection("tasks").document(task_id).update({"completed": COMPLETED})
+
+    # Delete Task's Blocks
+    result = database.collection("blocks").where("task_id", "==", task_id).get()
+    db_batch = database.batch()
+    for item in result:
+        db_batch.delete(item.reference)
+    db_batch.commit()
+
     return True
