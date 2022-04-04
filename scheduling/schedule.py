@@ -2,7 +2,6 @@
 import datetime
 import itertools
 from dateutil import parser
-from dateutil.relativedelta import relativedelta
 import pytz
 from tasks import tasks_routes
 from users import user_routes
@@ -210,10 +209,10 @@ class Schedule:
                             block["user_ids"] = [self.user_id]
                             block["type"] = "EVENT"
                             block["name"] = slot[1]["name"]
-                            block["start_time"] = parser.parse(
+                            block["start_time"] = self._utc_to_local(
                                 slot[1]["start_time"]
                             ).astimezone(pytz.utc)
-                            block["end_time"] = parser.parse(
+                            block["end_time"] = self._utc_to_local(
                                 slot[1]["end_time"]
                             ).astimezone(pytz.utc)
                             self._batch_create_blocks(db_batch, block)

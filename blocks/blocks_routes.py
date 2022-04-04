@@ -1,6 +1,9 @@
 """ Routes for blocks """
 import itertools
 from timeit import default_timer as timer
+from datetime import datetime
+from dateutil import parser
+import pytz
 from blocks.models import Block
 from db_connection import database
 from constants import NOT_COMPLETED
@@ -34,7 +37,7 @@ def get_block_by_id(block_id):
     return False
 
 
-def get_block(user_id):
+def get_blocks(user_id):
     """Get blocks for a given user via the user id"""
     result = (
         database.collection("blocks").where("user_ids", "array_contains", user_id).get()
@@ -64,6 +67,23 @@ def delete_blocks(user_id):
         db_batch.delete(item.reference)
 
     db_batch.commit()
+
+
+def expired_sub_tasks(user_id):
+    blocks = get_blocks(user_id=user_id)["blocks"]
+    cur_time = (
+        datetime.datetime.now(datetime.timezone.utc)
+        .replace(tzinfo=pytz.utc)
+        .astimezone("America/Chicago")
+    )
+
+    expired_tasks = []
+    for block in blocks:
+        end_time = block["end_time"].astimezone(pytz.timezone("America/Chicago"))
+        if block["type"] == "TASK" and end_time < cur_time:
+            expired_tasks.append(block)
+
+    return {"success": True}
 
 
 def _merge_blocks(block_list):
@@ -102,3 +122,8 @@ def _merge_blocks(block_list):
             merged_tasks[i]["merge_count"] = 0
 
     return event_list + merged_tasks
+
+
+def utc_to_local(utc_string):
+    utc_dt = parser.parse(utc_string)
+    return utc_dt.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("America/Chicago"))

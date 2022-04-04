@@ -139,10 +139,17 @@ def schedule_tasks():
 
 
 @app.route("/blocks/getBlocks", methods=["POST"])
-def get_block():
+def get_blocks():
     "Getting blocks with a user id"
     params = request.json
-    return blocks_routes.get_block(user_id=params["user_id"])
+    return blocks_routes.get_blocks(user_id=params["user_id"])
+
+
+@app.route("/blocks/expiredTasks", methods=["POST"])
+def expired_sub_tasks():
+    "Return tasks that have expired"
+    params = request.json
+    return blocks_routes.expired_sub_tasks(user_id=params["user_id"])
 
 
 @app.route("/groups/createGroup", methods=["POST"])
