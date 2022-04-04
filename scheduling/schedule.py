@@ -29,8 +29,10 @@ class Schedule:
         self.user_id = user_id
         self.tasks = []
         self.cram_tasks = []
+        self.event_dict = {}
         self.num_days = 0
         self.batch_writes = 0
+
         self.scheduler_success = True
 
     def scheduler(self):
@@ -225,12 +227,12 @@ class Schedule:
                 block["user_ids"] = [self.user_id]
                 block["type"] = "EVENT"
                 block["name"] = event["name"]
-                block["start_time"] = self._utc_to_local(
-                    event["start_time"]
-                ).astimezone(pytz.utc)
-                block["end_time"] = self._utc_to_local(event["end_time"]).astimezone(
-                    pytz.utc
-                )
+                print("Event:")
+                print(event["start_time"])
+                block["start_time"] = event["start_time"]
+                print("Block:")
+                print(block["start_time"])
+                block["end_time"] = event["end_time"]
                 self._batch_create_blocks(db_batch, block)
 
         if self.batch_writes > 0:
@@ -284,10 +286,10 @@ class Schedule:
                 if repeat_days == "MONTHLY" and date.day == start_time.date().day:
                     event["start_time"] = start_time.replace(
                         day=date.day, month=date.month, year=date.year
-                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    )
                     event["end_time"] = end_time.replace(
                         day=date.day, month=date.month, year=date.year
-                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    )
                     if date not in event_dict:
                         event_dict[date] = [event.copy()]
                     else:
@@ -295,10 +297,10 @@ class Schedule:
                 elif repeat_days[date.weekday()]:
                     event["start_time"] = start_time.replace(
                         day=date.day, month=date.month, year=date.year
-                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    )
                     event["end_time"] = end_time.replace(
                         day=date.day, month=date.month, year=date.year
-                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    )
                     if date not in event_dict:
                         event_dict[date] = [event.copy()]
                     else:
