@@ -3,3 +3,4 @@
 .pytest_cache
 .env
 serviceAccountKey.json
+mail.html

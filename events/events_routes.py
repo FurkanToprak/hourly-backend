@@ -1,6 +1,7 @@
 """ Routes for events """
 from datetime import datetime
 from dateutil import parser
+import pytz
 from events.models import Event
 from db_connection import database
 
@@ -54,8 +55,7 @@ def delete_event(event_id):
 
 def get_events_scheduler(user_id, cur_date):
     """Get events for scheduler"""
-
-    repeat_events, non_repeat_events = get_current_events(user_id, cur_date)
+    non_repeat_events, repeat_events = get_current_events(user_id, cur_date)
     non_repeat_send = {}
     if non_repeat_events:
         for i, item in enumerate(non_repeat_events):
@@ -87,7 +87,12 @@ def get_current_events(user_id, cur_date):
     non_repeat_events = [
         item
         for item in non_repeat_events
-        if parser.parse(item.to_dict()["start_time"]).date() >= cur_date
+        if utc_to_local(item.to_dict()["start_time"]).date() >= cur_date
     ]
 
     return non_repeat_events, repeat_events
+
+
+def utc_to_local(utc_string):
+    utc_dt = parser.parse(utc_string)
+    return utc_dt.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("America/Chicago"))
