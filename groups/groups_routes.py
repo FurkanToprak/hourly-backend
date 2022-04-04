@@ -78,7 +78,14 @@ def check_collaborators(group_id, user_id_1, user_id_2, name_1, name_2):
                 )
             }
         )
-        return {"success": True}
+        start_time = collab.start_time
+        end_time = collab.end_time
+        return {
+            "success": True,
+            "start_time": start_time,
+            "end_time": end_time,
+            "name": name_2,
+        }
 
     return {"success": False}
 
