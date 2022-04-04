@@ -134,14 +134,20 @@ class Schedule:
 
     def schedule_tasks(self):
         """Auto Schedule Users Tasks in Time Slots"""
+
+        pl_list = [[], [], [], [], []]
         sub_tasks_list = []
         for task in self.tasks:
             num_sub_tasks = float(task["estimated_time"]) / 0.5
             priority = self.generate_priority(
-                task["estimated_time"], task["completed_time"], task["due_date"]
+                task["estimated_time"],
+                task["completed_time"],
+                task["due_date"],
+                CURRENT_TIME.date(),
             )
             for _ in range(int(num_sub_tasks)):
-                sub_tasks_list.append((priority, task))
+                sub_tasks_list.append((priority, task.copy()))
+
         empty_slot_count = 0
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
@@ -150,48 +156,99 @@ class Schedule:
         if empty_slot_count < len(sub_tasks_list):
             return False
 
-        sub_tasks_list.sort(key=lambda a: a[0])
-        while len(sub_tasks_list) > 0:
+        sub_tasks_list.sort(key=lambda a: a[0], reverse=True)
+
+        for item in sub_tasks_list:
+            if item[0] > 4:
+                pl_list[0].append(item)
+            elif item[0] > 2:
+                pl_list[1].append(item)
+            elif item[0] > 1:
+                pl_list[2].append(item)
+            elif item[0] > 0.25:
+                pl_list[3].append(item)
+            else:
+                pl_list[4].append(item)
+
+        for i, _ in enumerate(pl_list):
+            pl_list[i].sort(key=lambda a: a[0], reverse=True)
+
+        while self._choose_pl_list(pl_list) != -1:
+            pl_index = self._choose_pl_list(pl_list)
+            cur_list = pl_list[pl_index]
             for i in range(self.num_days):
                 date = CURRENT_TIME.date() + datetime.timedelta(days=i)
                 day = self.time_slots[date]
 
+                written_task = ""
                 for j in range(len(day)):
                     if day[j] == (None, None):
-                        if len(sub_tasks_list) > 0:
-                            written_task = sub_tasks_list.pop()
-                            day[j] = ("TASK", written_task)
+                        if len(cur_list) > 0:
+                            pop_idx = 0
+                            if cur_list[0][1]["id"] == written_task and pl_index != 0:
+                                if not self._same_task_in_sub_list(cur_list):
+                                    for idx, item in enumerate(cur_list):
+                                        if item[1]["id"] != cur_list[0][1]["id"]:
+                                            pop_idx = idx
+
+                            written_task = cur_list.pop(pop_idx)
+                            day[j] = ("TASK", written_task[1])
+                            written_task = written_task[1]["id"]
                             self.time_slots[date][0] = ("NO_SKIP", None)
 
-                            for k in range(len(sub_tasks_list)):
-                                if sub_tasks_list[k][1] == written_task:
-                                    if "pending_time_done" in sub_tasks_list[k][1]:
-                                        sub_tasks_list[k][1]["pending_time_done"] += 1
-                                    else:
-                                        sub_tasks_list[k][1]["pending_time_done"] = 1
+                            pl_list = self.generate_priority_helper(
+                                pl_list,
+                                written_task,
+                                date,
+                            )
+                            for idx, _ in enumerate(pl_list):
+                                pl_list[idx].sort(key=lambda a: a[0], reverse=True)
 
-                                if "pending_time_done" in sub_tasks_list[k][1]:
-                                    priority = self.generate_priority(
-                                        sub_tasks_list[k][1]["estimated_time"],
-                                        sub_tasks_list[k][1]["completed_time"]
-                                        + sub_tasks_list[k][1]["pending_time_done"],
-                                        sub_tasks_list[k][1]["due_date"],
-                                    )
-                                else:
-                                    priority = self.generate_priority(
-                                        sub_tasks_list[k][1]["estimated_time"],
-                                        sub_tasks_list[k][1]["completed_time"],
-                                        sub_tasks_list[k][1]["due_date"],
-                                    )
-
-                                sub_tasks_list[k] = (priority, sub_tasks_list[k][1])
         return True
 
-    def generate_priority(self, estimated_time, completed_time, deadline) -> float:
+    def generate_priority_helper(self, pl_list, written_task, cur_date):
+        for sub_tasks_list in pl_list:
+            for k in range(len(sub_tasks_list)):
+                cur_sub_task = sub_tasks_list[k][1].copy()
+
+                if cur_sub_task["id"] == written_task:
+                    if "pending_time_done" in cur_sub_task:
+                        cur_pending_time = cur_sub_task["pending_time_done"]
+                        cur_sub_task.update(
+                            {"pending_time_done": cur_pending_time + 0.5}
+                        )
+                    else:
+                        cur_sub_task["pending_time_done"] = 0.5
+
+                if "pending_time_done" in cur_sub_task:
+                    priority = self.generate_priority(
+                        cur_sub_task["estimated_time"],
+                        cur_sub_task["completed_time"]
+                        + cur_sub_task["pending_time_done"],
+                        cur_sub_task["due_date"],
+                        cur_date,
+                    )
+                else:
+                    priority = self.generate_priority(
+                        cur_sub_task["estimated_time"],
+                        cur_sub_task["completed_time"],
+                        cur_sub_task["due_date"],
+                        cur_date,
+                    )
+
+                sub_tasks_list[k] = (
+                    priority,
+                    cur_sub_task,
+                )
+        return pl_list
+
+    def generate_priority(
+        self, estimated_time, completed_time, deadline, cur_day
+    ) -> float:
         """Generate task's priority"""
-        priority = (float(estimated_time) - float(completed_time)) / (
-            (self._utc_to_local(deadline) - CURRENT_TIME).total_seconds() / 3600
-        )
+
+        days = (self._utc_to_local(deadline).date() - cur_day).days + 1
+        priority = (float(estimated_time) - float(completed_time)) / (days)
         return priority
 
     def define_blocks(self):
@@ -207,8 +264,8 @@ class Schedule:
                         block = Block().structure()
                         block["user_ids"] = [self.user_id]
                         block["type"] = "TASK"
-                        block["task_id"] = slot[1][1]["id"]
-                        block["name"] = slot[1][1]["name"]
+                        block["task_id"] = slot[1]["id"]
+                        block["name"] = slot[1]["name"]
 
                         start_time = self.index_to_dt(index, date)
                         block["start_time"] = start_time
@@ -226,11 +283,7 @@ class Schedule:
                 block["user_ids"] = [self.user_id]
                 block["type"] = "EVENT"
                 block["name"] = event["name"]
-                print("Event:")
-                print(event["start_time"])
                 block["start_time"] = event["start_time"]
-                print("Block:")
-                print(block["start_time"])
                 block["end_time"] = event["end_time"]
                 self._batch_create_blocks(db_batch, block)
 
@@ -355,6 +408,28 @@ class Schedule:
 
     def _ceil_dt(self, d_t, delta):
         return d_t + (datetime.datetime.min.replace(tzinfo=TIME_ZONE) - d_t) % delta
+
+    def _choose_pl_list(self, pl_list):
+        empty_list_count = 0
+        for i in range(5):
+            if len(pl_list[i]) == 0:
+                empty_list_count += 1
+            else:
+                return i
+
+        if empty_list_count == 5:
+            return -1
+
+    def _same_task_in_sub_list(self, cur_list):
+        cur_list = [item[1] for item in cur_list]
+
+        cur_id = cur_list[0]["id"]
+
+        for item in cur_list:
+            if item["id"] != cur_id:
+                return False
+
+        return True
 
     def _repeat_events_parser(self, repeat_str):
         if repeat_str == "MONTHLY":
