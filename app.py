@@ -64,6 +64,15 @@ def update_sleep():
     return user_routes.update_sleep(user_id, start_day, end_day)
 
 
+@app.route("/users/deleteEverything", methods=["POST"])
+def delete_everything():
+    """Delete all of a user's blocks, tasks, and events"""
+    params = request.json
+    user_id = params["user_id"]
+
+    return user_routes.delete_everything(user_id=user_id)
+
+
 @app.route("/tasks/createTask", methods=["POST"])
 def create_task():
     "Creating a task for a user"

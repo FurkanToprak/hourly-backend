@@ -48,3 +48,25 @@ def update_sleep(user_id, start_day, end_day):
         return jsonify(success=True)
 
     return jsonify(success=False)
+
+
+def delete_everything(user_id):
+    """Delete all tasks, events, and blocks for a user"""
+    db_batch = database.batch()
+    result = (
+        database.collection("blocks").where("user_ids", "array_contains", user_id).get()
+    )
+    for item in result:
+        db_batch.delete(item.reference)
+
+    result = database.collection("tasks").where("user_id", "==", user_id).get()
+    for item in result:
+        db_batch.delete(item.reference)
+
+    result = database.collection("events").where("user_id", "==", user_id).get()
+    for item in result:
+        db_batch.delete(item.reference)
+
+    db_batch.commit()
+
+    return {"success": True}
