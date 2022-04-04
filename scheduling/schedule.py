@@ -142,7 +142,6 @@ class Schedule:
             )
             for _ in range(int(num_sub_tasks)):
                 sub_tasks_list.append((priority, task))
-
         empty_slot_count = 0
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
