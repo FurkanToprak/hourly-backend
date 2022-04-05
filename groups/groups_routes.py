@@ -103,6 +103,19 @@ def get_users_groups(user_id):
     return {"groups": send}
 
 
+def get_group_members(group_id):
+    """Get all members of a group"""
+    users = database.collection("groups").document(group_id).get().to_dict()["user_ids"]
+
+    name_ref = database.collection("users").where("id", "in", users).get()
+
+    names = []
+    for item in name_ref:
+        names.append(item.to_dict()["name"])
+
+    return {"names": names}
+
+
 def get_labels(user_id):
     """Get all group names for a user, for labels"""
     groups = get_users_groups(user_id=user_id)["groups"]

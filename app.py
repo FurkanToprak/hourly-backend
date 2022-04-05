@@ -178,6 +178,13 @@ def create_group():
     return groups_routes.create_group(params)
 
 
+@app.route("/groups/getUsers", methods=["POST"])
+def get_group_users():
+    """Get all of a users groups"""
+    params = request.json
+    return groups_routes.get_group_members(group_id=params["group_id"])
+
+
 @app.route("/groups/getUsersGroups", methods=["POST"])
 def get_users_groups():
     """Get all of a users groups"""
