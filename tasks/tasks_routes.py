@@ -74,8 +74,10 @@ def get_task_scheduler(user_id):
     result = database.collection("tasks").where("user_id", "==", user_id).get()
     send = {}
     if result:
-        for item in result:
-            send[item.to_dict()["id"]] = item.to_dict()
+        for i, item in enumerate(result):
+            temp = item.to_dict()
+            if int(temp["completed"]) == NOT_COMPLETED:
+                send[i] = temp
     return send
 
 
