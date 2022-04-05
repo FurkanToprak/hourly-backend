@@ -6,7 +6,6 @@ from dateutil import parser
 import pytz
 from blocks.models import Block
 from db_connection import database
-from constants import NOT_COMPLETED
 
 
 def create_block(params):
@@ -22,7 +21,6 @@ def create_block(params):
     block["name"] = params["name"]
     block["start_time"] = params["start_time"]
     block["end_time"] = params["end_time"]
-    block["completed"] = NOT_COMPLETED
 
     database.collection("blocks").add(block, blocks_id)
     return {"success": True}

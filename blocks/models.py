@@ -15,6 +15,5 @@ class Block:
             "name": "",
             "start_time": "",
             "end_time": "",
-            "completed": "",
         }
         return block
