@@ -137,41 +137,33 @@ def calculate_stats(group_id):
 
     # Average hours estimated for group's tasks
     estimated_hours = []
+    # Actual hours list
+    completed_hours = []
     # Percent Complete vs Incomplete
     comp_task_count = 0
     incomp_task_count = 0
     # Total hours allocated for this week
     week_hours = 0
-    # Complete Task Estimated vs Actual
-    comp_task_estimated_hours = 0
-    comp_task_actual_hours = 0
     for task in group_tasks:
         task_hours = float(task["estimated_time"])
         estimated_hours.append(task_hours)
+        completed = float(task["completed_hours"])
+        completed_hours.append(completed)
 
         if parse(task["due_date"]).date() <= sunday:
             week_hours += task_hours
-
-            if task["completed"] == COMPLETED:
-                comp_task_estimated_hours += task_hours
-                comp_task_actual_hours += float(task["completed_time"])
 
         if task["completed"] == COMPLETED:
             comp_task_count += 1
         else:
             incomp_task_count += 1
-    if estimated_hours:
-        average_hours = mean(estimated_hours)
-    else:
-        average_hours = 0
 
     return {
-        "average_hours": average_hours,
         "num_completed_tasks": comp_task_count,
         "num_incompleted_tasks": incomp_task_count,
-        "completed_task_estimated_hours": comp_task_estimated_hours,
-        "completed_task_actual_hours": comp_task_actual_hours,
-        "total_group_hours_for_week": week_hours,
+        "estimated_hours_list": estimated_hours,
+        "completed_hours_list": completed_hours,
+        "total_week_hours": week_hours,
     }
 
 
