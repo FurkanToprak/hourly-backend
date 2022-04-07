@@ -145,7 +145,7 @@ class Schedule:
         """Auto Schedule Users Tasks in Time Slots"""
         # List of Lists, Each Sublist has subtasks within
         # Sub tasks are Tuples of (Priority, Task Dictionary)
-        pl_list = [[], [], [], [], []]
+        pl_list = [[], [], [], [], [], []]
         sub_tasks_list = []
         for task in self.tasks:
             num_sub_tasks = float(task["estimated_time"]) / 0.5
@@ -199,11 +199,14 @@ class Schedule:
                                 pl_list[pl_index][0][1]["id"] == written_task
                                 and pl_index != 0
                             ):
-                                if not self._same_task_in_sub_list(pl_list[pl_index]):
+                                if pl_index == 0 or not self._same_task_in_sub_list(
+                                    pl_list[pl_index]
+                                ):
                                     for idx, item in enumerate(pl_list[pl_index]):
                                         if (
                                             item[1]["id"]
                                             != pl_list[pl_index][0][1]["id"]
+                                            or pl_index == 0
                                         ):
                                             pop_idx = idx
                             written_task = pl_list[pl_index].pop(pop_idx)
@@ -233,7 +236,7 @@ class Schedule:
         pl_list = [[], [], [], [], [], []]
         for item in sub_tasks_list:
             due_date = self._utc_to_local(item[1]["due_date"]).date()
-            if due_date == cur_day.date():
+            if due_date <= cur_day.date():
                 pl_list[0].append(item)
             elif item[0] > 4:
                 pl_list[1].append(item)
