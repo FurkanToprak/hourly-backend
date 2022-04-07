@@ -164,9 +164,9 @@ def get_blocks():
     return blocks_routes.get_blocks(user_id=params["user_id"])
 
 
-@app.route("/blocks/expiredTasks", methods=["POST"])
+@app.route("/blocks/expiredSubTasks", methods=["POST"])
 def expired_sub_tasks():
-    "Return tasks that have expired"
+    "Return sub tasks that have expired"
     params = request.json
     return blocks_routes.expired_sub_tasks(user_id=params["user_id"])
 
