@@ -185,7 +185,6 @@ class Schedule:
 
         while self._choose_pl_list(pl_list) != -1:
             pl_index = self._choose_pl_list(pl_list)
-            cur_list = pl_list[pl_index]
             for i in range(self.num_days):
                 date = self._ceil_dt(
                     CURRENT_TIME, datetime.timedelta(minutes=30)
@@ -194,20 +193,20 @@ class Schedule:
                 written_task = ""
                 for j in range(len(day)):
                     if day[j] == (None, None):
-                        print("If None")
-                        if len(cur_list) > 0:
-                            print("Up Here")
+                        if len(pl_list[pl_index]) > 0:
                             pop_idx = 0
-                            if cur_list[0][1]["id"] == written_task and pl_index != 0:
-                                print("First Level")
-                                if not self._same_task_in_sub_list(cur_list):
-                                    print("Second Level")
-                                    for idx, item in enumerate(cur_list):
-                                        print("Third Level")
-                                        if item[1]["id"] != cur_list[0][1]["id"]:
-                                            print("Fourth Level")
+                            if (
+                                pl_list[pl_index][0][1]["id"] == written_task
+                                and pl_index != 0
+                            ):
+                                if not self._same_task_in_sub_list(pl_list[pl_index]):
+                                    for idx, item in enumerate(pl_list[pl_index]):
+                                        if (
+                                            item[1]["id"]
+                                            != pl_list[pl_index][0][1]["id"]
+                                        ):
                                             pop_idx = idx
-                            written_task = cur_list.pop(pop_idx)
+                            written_task = pl_list[pl_index].pop(pop_idx)
                             day[j] = ("TASK", written_task[1])
                             written_task = written_task[1]["id"]
                             self.time_slots[date.date()][0] = ("NO_SKIP", None)
@@ -231,10 +230,6 @@ class Schedule:
             for _, val in enumerate(sub_list):
                 sub_tasks_list.append(val)
 
-        print("Before If Sort")
-        for idx, item in enumerate(pl_list_input):
-            print(f"{idx} - {len(item)}")
-
         pl_list = [[], [], [], [], [], []]
         for item in sub_tasks_list:
             due_date = self._utc_to_local(item[1]["due_date"]).date()
@@ -250,10 +245,6 @@ class Schedule:
                 pl_list[4].append(item)
             else:
                 pl_list[5].append(item)
-
-        print("After If Sort")
-        for idx, item in enumerate(pl_list):
-            print(f"{idx} - {len(item)}")
 
         return pl_list
 
