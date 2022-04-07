@@ -153,7 +153,7 @@ class Schedule:
                 task["estimated_time"],
                 task["completed_time"],
                 task["due_date"],
-                CURRENT_TIME.date(),
+                self._ceil_dt(CURRENT_TIME, datetime.timedelta(minutes=30)),
             )
             for _ in range(int(num_sub_tasks)):
                 sub_tasks_list.append((priority, task.copy()))
@@ -187,25 +187,30 @@ class Schedule:
             pl_index = self._choose_pl_list(pl_list)
             cur_list = pl_list[pl_index]
             for i in range(self.num_days):
-                date = CURRENT_TIME.date() + datetime.timedelta(days=i)
-                day = self.time_slots[date]
-
+                date = self._ceil_dt(
+                    CURRENT_TIME, datetime.timedelta(minutes=30)
+                ) + datetime.timedelta(days=i)
+                day = self.time_slots[date.date()]
                 written_task = ""
                 for j in range(len(day)):
                     if day[j] == (None, None):
+                        print("If None")
                         if len(cur_list) > 0:
+                            print("Up Here")
                             pop_idx = 0
                             if cur_list[0][1]["id"] == written_task and pl_index != 0:
+                                print("First Level")
                                 if not self._same_task_in_sub_list(cur_list):
+                                    print("Second Level")
                                     for idx, item in enumerate(cur_list):
+                                        print("Third Level")
                                         if item[1]["id"] != cur_list[0][1]["id"]:
+                                            print("Fourth Level")
                                             pop_idx = idx
-
                             written_task = cur_list.pop(pop_idx)
                             day[j] = ("TASK", written_task[1])
                             written_task = written_task[1]["id"]
-                            self.time_slots[date][0] = ("NO_SKIP", None)
-
+                            self.time_slots[date.date()][0] = ("NO_SKIP", None)
                             pl_list = self.generate_priority_helper(
                                 pl_list,
                                 written_task,
@@ -217,19 +222,23 @@ class Schedule:
 
         return True
 
-    def split_and_sort_pl(self, pl_list, cur_day):
-        for i, _ in enumerate(pl_list):
-            pl_list[i].sort(key=lambda a: a[0], reverse=True)
+    def split_and_sort_pl(self, pl_list_input, cur_day):
+        for i, _ in enumerate(pl_list_input):
+            pl_list_input[i].sort(key=lambda a: a[0], reverse=True)
 
         sub_tasks_list = []
-        for _, sub_list in enumerate(pl_list):
+        for _, sub_list in enumerate(pl_list_input):
             for _, val in enumerate(sub_list):
                 sub_tasks_list.append(val)
+
+        print("Before If Sort")
+        for idx, item in enumerate(pl_list_input):
+            print(f"{idx} - {len(item)}")
 
         pl_list = [[], [], [], [], [], []]
         for item in sub_tasks_list:
             due_date = self._utc_to_local(item[1]["due_date"]).date()
-            if due_date == cur_day:
+            if due_date == cur_day.date():
                 pl_list[0].append(item)
             elif item[0] > 4:
                 pl_list[1].append(item)
@@ -241,6 +250,10 @@ class Schedule:
                 pl_list[4].append(item)
             else:
                 pl_list[5].append(item)
+
+        print("After If Sort")
+        for idx, item in enumerate(pl_list):
+            print(f"{idx} - {len(item)}")
 
         return pl_list
 
@@ -285,11 +298,9 @@ class Schedule:
     ) -> float:
         """Generate task's priority"""
 
-        days = self._utc_to_local(deadline) - cur_day
-        print("---------------------")
-        print(days)
-        priority = (float(estimated_time) - float(completed_time)) / (days)
-        return priority * 100
+        days = ((self._utc_to_local(deadline) - cur_day).total_seconds()) / 86400
+        priority = (float(estimated_time) - float(completed_time)) / (float(days))
+        return priority
 
     def define_blocks(self):
         """Define blocks to to be commited to DB"""
@@ -457,8 +468,7 @@ class Schedule:
             else:
                 return i
 
-        if empty_list_count == len(pl_list):
-            return -1
+        return -1
 
     def _same_task_in_sub_list(self, cur_list):
         cur_list = [item[1] for item in cur_list]
