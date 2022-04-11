@@ -24,6 +24,12 @@ def create_group(params):
     return {"success": True}
 
 
+def get_group_info(group_id):
+    """Returns group information"""
+    group_dict = database.collection("groups").document(group_id).get().to_dict()
+    return {"group": group_dict}
+
+
 def join_group(user_id, group_id):
     """Add user to group"""
     group_ref = database.collection("groups").document(group_id)
