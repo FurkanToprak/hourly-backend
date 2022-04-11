@@ -51,7 +51,6 @@ class Schedule:
 
         # Sets self.num_days (days between now and last due date) value accordingly
         self.set_num_days()
-        print("Num Days - ", self.num_days)
         # Builds self.time_slots
         # Dictionary of Lists
         # self.time_slots[date] = [UNITS_PER_DAY Length List]
@@ -81,7 +80,6 @@ class Schedule:
         else:
             last_task = max(self.tasks, key=lambda x: self._utc_to_local(x["due_date"]))
             self.num_days = self._utc_to_local(last_task["due_date"]) - CURRENT_TIME
-            print(self.num_days)
             if self.num_days.seconds > 0:
                 self.num_days = self.num_days.days + 1
             else:
@@ -91,7 +89,6 @@ class Schedule:
         self.time_slots = {}
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
-            print(date)
             self.time_slots[date] = []
             for _ in range(UNITS_PER_DAY):
                 self.time_slots[date].append((None, None))
