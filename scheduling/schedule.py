@@ -51,7 +51,7 @@ class Schedule:
 
         # Sets self.num_days (days between now and last due date) value accordingly
         self.set_num_days()
-
+        print("Num Days - ", self.num_days)
         # Builds self.time_slots
         # Dictionary of Lists
         # self.time_slots[date] = [UNITS_PER_DAY Length List]
@@ -81,7 +81,7 @@ class Schedule:
         else:
             last_task = max(self.tasks, key=lambda x: self._utc_to_local(x["due_date"]))
             self.num_days = self._utc_to_local(last_task["due_date"]) - CURRENT_TIME
-
+            print(self.num_days)
             if self.num_days.seconds > 0:
                 self.num_days = self.num_days.days + 1
             else:
@@ -91,6 +91,7 @@ class Schedule:
         self.time_slots = {}
         for i in range(self.num_days):
             date = CURRENT_TIME.date() + datetime.timedelta(days=i)
+            print(date)
             self.time_slots[date] = []
             for _ in range(UNITS_PER_DAY):
                 self.time_slots[date].append((None, None))
@@ -143,12 +144,30 @@ class Schedule:
 
     def schedule_tasks(self):
         """Auto Schedule Users Tasks in Time Slots"""
+        for task in self.tasks:
+            num_hours = float(task["estimated_time"])
+            due_date = self._utc_to_local(task["due_date"])
+            due_date_units, _ = self._dt_to_units(due_date)
+
+            empty_slots = 0
+            for i in range(self.num_days):
+                date = CURRENT_TIME.date() + datetime.timedelta(days=i)
+                day = self.time_slots[date]
+                day_limit = UNITS_PER_DAY
+                if date == due_date.date():
+                    day_limit = due_date_units
+                for j in range(int(day_limit)):
+                    if day[j] == (None, None):
+                        empty_slots += 1
+            if (empty_slots / (60 / TIME_UNIT)) < num_hours:
+                return False
+
         # List of Lists, Each Sublist has subtasks within
         # Sub tasks are Tuples of (Priority, Task Dictionary)
         pl_list = [[], [], [], [], [], []]
         sub_tasks_list = []
         for task in self.tasks:
-            num_sub_tasks = float(task["estimated_time"]) / 0.5
+            num_sub_tasks = float(task["estimated_time"]) / float(TIME_UNIT / 60)
             priority = self.generate_priority(
                 task["estimated_time"],
                 task["completed_time"],
@@ -317,7 +336,6 @@ class Schedule:
                         block["end_time"] = start_time + datetime.timedelta(
                             minutes=TIME_UNIT
                         )
-                        block["completed"] = NOT_COMPLETED
                         self._batch_create_blocks(db_batch, block)
                     else:
                         continue
@@ -331,6 +349,17 @@ class Schedule:
                 block["start_time"] = event["start_time"]
                 block["end_time"] = event["end_time"]
                 self._batch_create_blocks(db_batch, block)
+
+        for task in self.cram_tasks:
+            block = Block().structure()
+            block["user_ids"] = [self.user_id]
+            block["type"] = "CRAM"
+            block["name"] = task["name"]
+            block["start_time"] = self._ceil_dt(
+                CURRENT_TIME, datetime.timedelta(minutes=30)
+            )
+            block["end_time"] = task["due_date"]
+            self._batch_create_blocks(db_batch, block)
 
         if self.batch_writes > 0:
             db_batch.commit()
@@ -431,7 +460,7 @@ class Schedule:
 
         return cur_time
 
-    def _dt_to_units(self, start_time, end_time):
+    def _dt_to_units(self, start_time, end_time=CURRENT_TIME):
         """Convert datetime to time units"""
         start_units = (start_time.hour * 60 + start_time.minute) / TIME_UNIT
         end_delta = (end_time + datetime.timedelta(days=1)).replace(
