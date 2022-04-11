@@ -50,6 +50,17 @@ def update_sleep(user_id, start_day, end_day):
     return jsonify(success=False)
 
 
+def get_names(user_list):
+    """Return a list of user's names"""
+    result = database.collection("users").where("id", "in", user_list).get()
+
+    send = []
+    for item in result:
+        send.append((item.to_dict()["id"], item.to_dict()["name"]))
+
+    return send
+
+
 def delete_everything(user_id):
     """Delete all tasks, events, and blocks for a user"""
     db_batch = database.batch()
