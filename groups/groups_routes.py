@@ -1,6 +1,5 @@
 """Routes for Groups"""
 from datetime import datetime, timedelta
-from statistics import mean
 from google.cloud import firestore
 from dateutil.parser import parse
 from db_connection import database
@@ -13,14 +12,14 @@ def create_group(params):
     """Create the event"""
     event_doc = database.collection("groups").document()
     group_id = event_doc.id
-    group = Group().structure()
+    group_struct = Group().structure()
 
-    group["id"] = group_id
-    group["user_ids"] = [params["user_id"]]
-    group["name"] = params["name"]
-    group["description"] = params["description"]
+    group_struct["id"] = group_id
+    group_struct["user_ids"] = [params["user_id"]]
+    group_struct["name"] = params["name"]
+    group_struct["description"] = params["description"]
 
-    database.collection("groups").add(group, group_id)
+    database.collection("groups").add(group_struct, group_id)
     return {"success": True}
 
 
@@ -34,24 +33,28 @@ def join_group(user_id, group_id):
     """Add user to group"""
     group_ref = database.collection("groups").document(group_id)
 
-    group_ref.update({"user_ids": firestore.ArrayUnion([user_id])})
-
-    return {"success": True}
+    if group_ref.get().exists:
+        group_ref.update({"user_ids": firestore.ArrayUnion([user_id])})
+        return {"success": True}
+    else:
+        return {"success": False}
 
 
 def leave_group(user_id, group_id):
     """Remove user from group"""
     group_ref = database.collection("groups").document(group_id)
 
-    group_ref.update({"user_ids": firestore.ArrayRemove([user_id])})
-
-    return {"success": True}
+    if group_ref.get().exists:
+        group_ref.update({"user_ids": firestore.ArrayRemove([user_id])})
+        return {"success": True}
+    else:
+        return {"success": False}
 
 
 def get_collaborators(group_id):
     """Get all people looking for a collaborator"""
-    group = database.collection("groups").document(group_id).get().to_dict()
-    return {"collaborators": group["collaborators"]}
+    group_collab = database.collection("groups").document(group_id).get().to_dict()
+    return {"collaborators": group_collab["collaborators"]}
 
 
 def place_collaborator(user_id, user_name, group_id):
@@ -127,8 +130,8 @@ def get_labels(user_id):
     groups = get_users_groups(user_id=user_id)["groups"]
 
     labels = []
-    for group in groups:
-        labels.append(group["name"])
+    for grp in groups:
+        labels.append(grp["name"])
 
     return {"labels": labels}
 
