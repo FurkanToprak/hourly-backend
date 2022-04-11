@@ -1,9 +1,10 @@
 """ Routes for blocks """
 import itertools
 from timeit import default_timer as timer
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil import parser
 import pytz
+from tasks.tasks_routes import get_task_by_id
 from blocks.models import Block
 from db_connection import database
 
@@ -70,18 +71,29 @@ def expired_sub_tasks(user_id):
     """Get all blocks that are expired"""
     blocks = get_blocks(user_id=user_id)["blocks"]
     cur_time = (
-        datetime.datetime.now(datetime.timezone.utc)
+        datetime.now(timezone.utc)
         .replace(tzinfo=pytz.utc)
-        .astimezone("America/Chicago")
+        .astimezone(pytz.timezone("America/Chicago"))
     )
 
     expired_tasks = []
+    task_dict = {}
     for block in blocks:
         end_time = block["end_time"].astimezone(pytz.timezone("America/Chicago"))
         if block["type"] == "TASK" and end_time < cur_time:
-            expired_tasks.append(block)
+            task_id = block["task_id"]
 
-    return {"success": True}
+            if task_id in task_dict:
+                task_dict[task_id] += float(block["hours"])
+            else:
+                task_dict[task_id] = float(block["hours"])
+
+    for task_id, hours in task_dict.items():
+        task = get_task_by_id(task_id)
+        task["hours"] = hours
+        expired_tasks.append(task)
+
+    return {"expired_tasks": expired_tasks}
 
 
 def _merge_blocks(block_list):
