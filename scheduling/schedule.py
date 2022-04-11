@@ -38,16 +38,24 @@ class Schedule:
     def scheduler(self):
         """Main scheduling flow"""
         task_list = tasks_routes.get_task_scheduler(self.user_id)
+        # List of Dictionaries (Tasks)
+        # tasks/models.py
         self.tasks = [
             value for value in task_list.values() if not value["do_not_schedule"]
         ]
 
+        # Rest of tasks that are marked for cramming
         self.cram_tasks = [
             value for value in task_list.values() if value["do_not_schedule"]
         ]
 
+        # Sets self.num_days (days between now and last due date) value accordingly
         self.set_num_days()
-
+        # Builds self.time_slots
+        # Dictionary of Lists
+        # self.time_slots[date] = [UNITS_PER_DAY Length List]
+        # Specific Day - [integer (0-Units per day)] = Tuple of length 2
+        # (None, None), ("SLEEP", None), ("TASK", task_dict), ("EVENT", "event_dict")
         self.build_time_slots()
 
         if len(self.tasks) == 0:
@@ -72,7 +80,6 @@ class Schedule:
         else:
             last_task = max(self.tasks, key=lambda x: self._utc_to_local(x["due_date"]))
             self.num_days = self._utc_to_local(last_task["due_date"]) - CURRENT_TIME
-
             if self.num_days.seconds > 0:
                 self.num_days = self.num_days.days + 1
             else:
@@ -134,16 +141,35 @@ class Schedule:
 
     def schedule_tasks(self):
         """Auto Schedule Users Tasks in Time Slots"""
+        for task in self.tasks:
+            num_hours = float(task["estimated_time"])
+            due_date = self._utc_to_local(task["due_date"])
+            due_date_units, _ = self._dt_to_units(due_date)
 
-        pl_list = [[], [], [], [], []]
+            empty_slots = 0
+            for i in range(self.num_days):
+                date = CURRENT_TIME.date() + datetime.timedelta(days=i)
+                day = self.time_slots[date]
+                day_limit = UNITS_PER_DAY
+                if date == due_date.date():
+                    day_limit = due_date_units
+                for j in range(int(day_limit)):
+                    if day[j] == (None, None):
+                        empty_slots += 1
+            if (empty_slots / (60 / TIME_UNIT)) < num_hours:
+                return False
+
+        # List of Lists, Each Sublist has subtasks within
+        # Sub tasks are Tuples of (Priority, Task Dictionary)
+        pl_list = [[], [], [], [], [], []]
         sub_tasks_list = []
         for task in self.tasks:
-            num_sub_tasks = float(task["estimated_time"]) / 0.5
+            num_sub_tasks = float(task["estimated_time"]) / float(TIME_UNIT / 60)
             priority = self.generate_priority(
                 task["estimated_time"],
                 task["completed_time"],
                 task["due_date"],
-                CURRENT_TIME.date(),
+                self._ceil_dt(CURRENT_TIME, datetime.timedelta(minutes=30)),
             )
             for _ in range(int(num_sub_tasks)):
                 sub_tasks_list.append((priority, task.copy()))
@@ -159,52 +185,87 @@ class Schedule:
         sub_tasks_list.sort(key=lambda a: a[0], reverse=True)
 
         for item in sub_tasks_list:
-            if item[0] > 4:
+            due_date = self._utc_to_local(item[1]["due_date"]).date()
+            if due_date == CURRENT_TIME.date():
                 pl_list[0].append(item)
-            elif item[0] > 2:
+            elif item[0] > 4:
                 pl_list[1].append(item)
-            elif item[0] > 1:
+            elif item[0] > 2:
                 pl_list[2].append(item)
-            elif item[0] > 0.25:
+            elif item[0] > 1:
                 pl_list[3].append(item)
-            else:
+            elif item[0] > 0.25:
                 pl_list[4].append(item)
-
-        for i, _ in enumerate(pl_list):
-            pl_list[i].sort(key=lambda a: a[0], reverse=True)
+            else:
+                pl_list[5].append(item)
 
         while self._choose_pl_list(pl_list) != -1:
             pl_index = self._choose_pl_list(pl_list)
-            cur_list = pl_list[pl_index]
             for i in range(self.num_days):
-                date = CURRENT_TIME.date() + datetime.timedelta(days=i)
-                day = self.time_slots[date]
-
+                date = self._ceil_dt(
+                    CURRENT_TIME, datetime.timedelta(minutes=30)
+                ) + datetime.timedelta(days=i)
+                day = self.time_slots[date.date()]
                 written_task = ""
                 for j in range(len(day)):
                     if day[j] == (None, None):
-                        if len(cur_list) > 0:
+                        if len(pl_list[pl_index]) > 0:
                             pop_idx = 0
-                            if cur_list[0][1]["id"] == written_task and pl_index != 0:
-                                if not self._same_task_in_sub_list(cur_list):
-                                    for idx, item in enumerate(cur_list):
-                                        if item[1]["id"] != cur_list[0][1]["id"]:
+                            if (
+                                pl_list[pl_index][0][1]["id"] == written_task
+                                and pl_index != 0
+                            ):
+                                if pl_index == 0 or not self._same_task_in_sub_list(
+                                    pl_list[pl_index]
+                                ):
+                                    for idx, item in enumerate(pl_list[pl_index]):
+                                        if (
+                                            item[1]["id"]
+                                            != pl_list[pl_index][0][1]["id"]
+                                            or pl_index == 0
+                                        ):
                                             pop_idx = idx
-
-                            written_task = cur_list.pop(pop_idx)
+                            written_task = pl_list[pl_index].pop(pop_idx)
                             day[j] = ("TASK", written_task[1])
                             written_task = written_task[1]["id"]
-                            self.time_slots[date][0] = ("NO_SKIP", None)
-
+                            self.time_slots[date.date()][0] = ("NO_SKIP", None)
                             pl_list = self.generate_priority_helper(
                                 pl_list,
                                 written_task,
                                 date,
                             )
-                            for idx, _ in enumerate(pl_list):
-                                pl_list[idx].sort(key=lambda a: a[0], reverse=True)
+
+                            next_day = date + datetime.timedelta(days=1)
+                            pl_list = self.split_and_sort_pl(pl_list, next_day)
 
         return True
+
+    def split_and_sort_pl(self, pl_list_input, cur_day):
+        for i, _ in enumerate(pl_list_input):
+            pl_list_input[i].sort(key=lambda a: a[0], reverse=True)
+
+        sub_tasks_list = []
+        for _, sub_list in enumerate(pl_list_input):
+            for _, val in enumerate(sub_list):
+                sub_tasks_list.append(val)
+
+        pl_list = [[], [], [], [], [], []]
+        for item in sub_tasks_list:
+            due_date = self._utc_to_local(item[1]["due_date"]).date()
+            if due_date <= cur_day.date():
+                pl_list[0].append(item)
+            elif item[0] > 4:
+                pl_list[1].append(item)
+            elif item[0] > 2:
+                pl_list[2].append(item)
+            elif item[0] > 1:
+                pl_list[3].append(item)
+            elif item[0] > 0.25:
+                pl_list[4].append(item)
+            else:
+                pl_list[5].append(item)
+
+        return pl_list
 
     def generate_priority_helper(self, pl_list, written_task, cur_date):
         for sub_tasks_list in pl_list:
@@ -247,8 +308,8 @@ class Schedule:
     ) -> float:
         """Generate task's priority"""
 
-        days = (self._utc_to_local(deadline).date() - cur_day).days + 1
-        priority = (float(estimated_time) - float(completed_time)) / (days)
+        days = ((self._utc_to_local(deadline) - cur_day).total_seconds()) / 86400
+        priority = (float(estimated_time) - float(completed_time)) / (float(days))
         return priority
 
     def define_blocks(self):
@@ -272,7 +333,6 @@ class Schedule:
                         block["end_time"] = start_time + datetime.timedelta(
                             minutes=TIME_UNIT
                         )
-                        block["completed"] = NOT_COMPLETED
                         self._batch_create_blocks(db_batch, block)
                     else:
                         continue
@@ -286,6 +346,17 @@ class Schedule:
                 block["start_time"] = event["start_time"]
                 block["end_time"] = event["end_time"]
                 self._batch_create_blocks(db_batch, block)
+
+        for task in self.cram_tasks:
+            block = Block().structure()
+            block["user_ids"] = [self.user_id]
+            block["type"] = "CRAM"
+            block["name"] = task["name"]
+            block["start_time"] = self._ceil_dt(
+                CURRENT_TIME, datetime.timedelta(minutes=30)
+            )
+            block["end_time"] = task["due_date"]
+            self._batch_create_blocks(db_batch, block)
 
         if self.batch_writes > 0:
             db_batch.commit()
@@ -386,7 +457,7 @@ class Schedule:
 
         return cur_time
 
-    def _dt_to_units(self, start_time, end_time):
+    def _dt_to_units(self, start_time, end_time=CURRENT_TIME):
         """Convert datetime to time units"""
         start_units = (start_time.hour * 60 + start_time.minute) / TIME_UNIT
         end_delta = (end_time + datetime.timedelta(days=1)).replace(
@@ -411,14 +482,13 @@ class Schedule:
 
     def _choose_pl_list(self, pl_list):
         empty_list_count = 0
-        for i in range(5):
+        for i in range(len(pl_list)):
             if len(pl_list[i]) == 0:
                 empty_list_count += 1
             else:
                 return i
 
-        if empty_list_count == 5:
-            return -1
+        return -1
 
     def _same_task_in_sub_list(self, cur_list):
         cur_list = [item[1] for item in cur_list]
