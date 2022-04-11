@@ -147,7 +147,7 @@ def calculate_stats(group_id):
     for task in group_tasks:
         task_hours = float(task["estimated_time"])
         estimated_hours.append(task_hours)
-        completed = float(task["completed_hours"])
+        completed = float(task["completed_time"])
         completed_hours.append(completed)
 
         if parse(task["due_date"]).date() <= sunday:
