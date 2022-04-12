@@ -1,5 +1,5 @@
 """ Routes for events """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from timeit import default_timer as timer
 from dateutil import parser
 import pytz
@@ -70,12 +70,27 @@ def parse_ics_file(ics_file, user_id):
     }
     for component in gcal.walk():
         if component.name == "VEVENT":
+            if type(component.get("dtstart").dt) is date:
+                print("skipping")
+                continue
             event_params["name"] = component.get("summary")
-            event_params["start_time"] = component.get("dtstart").dt.strftime(STRF)
-            event_params["end_time"] = component.get("dtend").dt.strftime(STRF)
+            event_params["start_time"] = (
+                component.get("dtstart").dt.replace(
+                    tzinfo=pytz.timezone("America/Chicago")
+                )
+                + timedelta(hours=5)
+            ).strftime(STRF)
+            event_params["end_time"] = (
+                component.get("dtend").dt.replace(
+                    tzinfo=pytz.timezone("America/Chicago")
+                )
+                + timedelta(hours=5)
+            ).strftime(STRF)
             rrule = component.get("rrule")
-
             if rrule:
+                if "UNTIL" in rrule:
+                    if rrule["UNTIL"][0].date() < datetime.now().date():
+                        continue
                 repeat = ""
                 if "DAILY" in rrule["FREQ"]:
                     repeat = "MTWRFSU"
