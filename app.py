@@ -6,7 +6,6 @@ from flask_mail import Mail
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
-from pytest import param
 from scheduling.schedule import Schedule
 from users import user_routes
 from tasks import tasks_routes
