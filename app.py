@@ -6,7 +6,6 @@ from flask_mail import Mail
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
-from pytest import param
 from scheduling.schedule import Schedule
 from users import user_routes
 from tasks import tasks_routes
@@ -302,6 +301,16 @@ def get_group_tasks():
     """Get Group Tasks"""
     params = request.json
     return groups_routes.get_group_tasks(group_id=params["group_id"])
+
+
+@app.route("/events/uploadICS", methods=["POST"])
+def upload_ics():
+    """Upload ICS file for parsing"""
+    if "file" not in request.files:
+        return {"success": False}
+    return events_routes.parse_ics_file(
+        ics_file=request.files["file"], user_id=request.form["user_id"]
+    )
 
 
 # Present only for testing purposes

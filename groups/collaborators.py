@@ -3,6 +3,7 @@ import datetime
 import pytz
 from scheduling.schedule import Schedule
 from events.events_routes import create_event
+from constants import STRF
 
 
 CURRENT_TIME = (
@@ -10,8 +11,6 @@ CURRENT_TIME = (
     .replace(tzinfo=pytz.utc)
     .astimezone(pytz.timezone("America/Chicago"))
 )
-
-STRF = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class Collab:

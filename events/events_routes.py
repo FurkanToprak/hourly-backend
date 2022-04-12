@@ -1,9 +1,12 @@
 """ Routes for events """
 from datetime import datetime, timedelta
+from timeit import default_timer as timer
 from dateutil import parser
 import pytz
+from icalendar import Calendar
 from events.models import Event
 from db_connection import database
+from constants import STRF
 
 
 def create_event(params):
@@ -51,6 +54,76 @@ def delete_event(event_id):
         return {"success": True}
 
     return {"success": False}
+
+
+def parse_ics_file(ics_file, user_id):
+    """Parse an ICS into events"""
+    gcal = Calendar.from_ical(ics_file.read())
+    db_batch = database.batch()
+
+    event_params = {
+        "user_id": user_id,
+        "name": "",
+        "start_time": "",
+        "end_time": "",
+        "repeat": "",
+    }
+    for component in gcal.walk():
+        if component.name == "VEVENT":
+            event_params["name"] = component.get("summary")
+            event_params["start_time"] = component.get("dtstart").dt.strftime(STRF)
+            event_params["end_time"] = component.get("dtend").dt.strftime(STRF)
+            rrule = component.get("rrule")
+
+            if rrule:
+                repeat = ""
+                if "DAILY" in rrule["FREQ"]:
+                    repeat = "MTWRFSU"
+                elif "WEEKLY" in rrule["FREQ"]:
+                    if "BYDAY" in rrule:
+                        if "SU" in rrule["BYDAY"]:
+                            repeat += "U"
+                        if "MO" in rrule["BYDAY"]:
+                            repeat += "M"
+                        if "TU" in rrule["BYDAY"]:
+                            repeat += "T"
+                        if "WE" in rrule["BYDAY"]:
+                            repeat += "W"
+                        if "TH" in rrule["BYDAY"]:
+                            repeat += "R"
+                        if "FR" in rrule["BYDAY"]:
+                            repeat += "F"
+                        if "SA" in rrule["BYDAY"]:
+                            repeat += "S"
+                    else:
+                        day_parser = {
+                            0: "M",
+                            1: "T",
+                            2: "W",
+                            3: "R",
+                            4: "F",
+                            5: "S",
+                            6: "U",
+                        }
+                        day = component.get("dtstart").dt.weekday()
+                        repeat = day_parser[day]
+
+                elif "MONTHLY" in rrule["FREQ"]:
+                    repeat = "MONTHLY"
+                event_params["repeat"] = repeat
+
+            batch_create_event(db_batch=db_batch, params=event_params)
+            event_params["repeat"] = ""
+
+    db_batch.commit()
+    return {"success": True}
+
+
+def batch_create_event(db_batch, params):
+    """Create events via batch"""
+    new_event_ref = database.collection("events").document()
+    params["id"] = new_event_ref.id
+    db_batch.set(new_event_ref, params)
 
 
 def get_events_scheduler(user_id, cur_date):

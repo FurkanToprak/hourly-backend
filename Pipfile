@@ -16,6 +16,7 @@ python-dateutil = "*"
 pytz = "*"
 flask-mail = "*"
 google-cloud-firestore = "*"
+icalendar = "*"
 
 [dev-packages]
 black = "*"
