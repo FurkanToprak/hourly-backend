@@ -60,7 +60,7 @@ def get_friends_list(group_id, user_id):
     friend_dict = {
         "mutual": [],
         "awaiting_your_response": [],
-        "awaiting_their_resonse": [],
+        "awaiting_their_response": [],
         "no_relation": [],
     }
 
@@ -72,7 +72,7 @@ def get_friends_list(group_id, user_id):
             if user_id in friends[user]:
                 friend_dict["mutual"].append(user)
         else:
-            friend_dict["awaiting_their_resonse"].append(user)
+            friend_dict["awaiting_their_response"].append(user)
 
     for user, f_list in friends.items():
         if user != user_id:
