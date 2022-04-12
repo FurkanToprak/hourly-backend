@@ -355,7 +355,7 @@ class Schedule:
             block["start_time"] = self._ceil_dt(
                 CURRENT_TIME, datetime.timedelta(minutes=30)
             )
-            block["end_time"] = parser.parse(task["due_date"])
+            block["end_time"] = self._utc_to_local(task["due_date"])
             self._batch_create_blocks(db_batch, block)
 
         if self.batch_writes > 0:
