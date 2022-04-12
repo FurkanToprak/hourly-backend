@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from google.cloud import firestore
 from dateutil.parser import parse
 from db_connection import database
+from users.user_routes import get_names
 from groups.models import Group
 from groups.collaborators import Collab
 from constants import COMPLETED
@@ -51,24 +52,73 @@ def leave_group(user_id, group_id):
         return {"success": False}
 
 
-def get_collaborators(group_id):
-    """Get all people looking for a collaborator"""
-    group_collab = database.collection("groups").document(group_id).get().to_dict()
-    return {"collaborators": group_collab["collaborators"]}
+def get_friends_list(group_id, user_id):
+    """Get a user's friends list"""
+    group_dict = database.collection("groups").document(group_id).get().to_dict()
+    friends = group_dict["friends"]
+
+    friend_dict = {
+        "mutual": [],
+        "awaiting_your_response": [],
+        "awaiting_their_resonse": [],
+        "no_relation": [],
+    }
+
+    if user_id not in friends:
+        friends[user_id] = []
+
+    for user in friends[user_id]:
+        if user in friends:
+            if user_id in friends[user]:
+                friend_dict["mutual"].append(user)
+        else:
+            friend_dict["awaiting_their_resonse"].append(user)
+
+    for user, f_list in friends.items():
+        if user != user_id:
+            if user_id in f_list:
+                if user not in friend_dict["mutual"]:
+                    friend_dict["awaiting_your_response"].append(user)
+            else:
+                friend_dict["no_relation"].append(user)
+
+    for name, users in friend_dict.items():
+        if users:
+            friend_dict[name] = get_names(users)
+
+    return friend_dict
 
 
-def place_collaborator(user_id, user_name, group_id):
-    """Add user to collaborator list"""
-    group_ref = database.collection("groups").document(group_id)
+def add_to_friends_list(group_id, user_id_1, user_id_2):
+    """Add to a user's friends list"""
+    group_dict = database.collection("groups").document(group_id).get().to_dict()
 
-    group_ref.update(
-        {
-            "collaborators": firestore.ArrayUnion(
-                [{"user_id": user_id, "user_name": user_name}]
-            )
-        }
+    friends = group_dict["friends"]
+
+    if user_id_1 in friends:
+        friends[user_id_1].append(user_id_2)
+    else:
+        friends[user_id_1] = [user_id_2]
+
+    database.collection("groups").document(group_id).set(
+        {"friends": friends}, merge=True
     )
+    return {"success": True}
 
+
+def remove_from_friends_list(group_id, user_id_1, user_id_2):
+    """Remove from a user's friends list"""
+    group_dict = database.collection("groups").document(group_id).get().to_dict()
+
+    friends = group_dict["friends"]
+
+    if user_id_1 in friends:
+        if user_id_2 in friends[user_id_1]:
+            friends[user_id_1].remove(user_id_2)
+
+    database.collection("groups").document(group_id).set(
+        {"friends": friends}, merge=True
+    )
     return {"success": True}
 
 

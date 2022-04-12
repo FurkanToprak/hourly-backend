@@ -6,6 +6,7 @@ from flask_mail import Mail
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_cors import CORS
+from pytest import param
 from scheduling.schedule import Schedule
 from users import user_routes
 from tasks import tasks_routes
@@ -212,6 +213,38 @@ def join_group():
     params = request.json
     return groups_routes.join_group(
         user_id=params["user_id"], group_id=params["group_id"]
+    )
+
+
+@app.route("/groups/getFriendsList", methods=["POST"])
+def get_friends_list():
+    """Get Friends List"""
+    params = request.json
+    return groups_routes.get_friends_list(
+        user_id=params["user_id"],
+        group_id=params["group_id"],
+    )
+
+
+@app.route("/groups/addFriend", methods=["POST"])
+def add_group_friend():
+    """Add Group Friend"""
+    params = request.json
+    return groups_routes.add_to_friends_list(
+        user_id_1=params["user_id_1"],
+        user_id_2=params["user_id_2"],
+        group_id=params["group_id"],
+    )
+
+
+@app.route("/groups/removeFriend", methods=["POST"])
+def remove_group_friend():
+    """Remove Group Friend"""
+    params = request.json
+    return groups_routes.remove_from_friends_list(
+        user_id_1=params["user_id_1"],
+        user_id_2=params["user_id_2"],
+        group_id=params["group_id"],
     )
 
 
