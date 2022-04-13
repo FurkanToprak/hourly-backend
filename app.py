@@ -146,6 +146,18 @@ def delete_event():
     return events_routes.delete_event(params["event_id"])
 
 
+@app.route("/events/uploadICS", methods=["POST"])
+def upload_ics():
+    """Upload ICS file for parsing"""
+    if "file" not in request.files:
+        return {"success": False}
+    return events_routes.parse_ics_file(
+        ics_file=request.files["file"],
+        user_id=request.form["user_id"],
+        start_point=request.form["start_point"],
+    )
+
+
 @app.route("/schedule", methods=["POST"])
 def schedule_tasks():
     "Auto Scheduler"
@@ -301,16 +313,6 @@ def get_group_tasks():
     """Get Group Tasks"""
     params = request.json
     return groups_routes.get_group_tasks(group_id=params["group_id"])
-
-
-@app.route("/events/uploadICS", methods=["POST"])
-def upload_ics():
-    """Upload ICS file for parsing"""
-    if "file" not in request.files:
-        return {"success": False}
-    return events_routes.parse_ics_file(
-        ics_file=request.files["file"], user_id=request.form["user_id"]
-    )
 
 
 # Present only for testing purposes

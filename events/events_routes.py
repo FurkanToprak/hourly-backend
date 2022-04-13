@@ -56,7 +56,7 @@ def delete_event(event_id):
     return {"success": False}
 
 
-def parse_ics_file(ics_file, user_id):
+def parse_ics_file(ics_file, user_id, start_point):
     """Parse an ICS into events"""
     gcal = Calendar.from_ical(ics_file.read())
     db_batch = database.batch()
@@ -68,10 +68,10 @@ def parse_ics_file(ics_file, user_id):
         "end_time": "",
         "repeat": "",
     }
+    start_point = utc_to_local(start_point)
     for component in gcal.walk():
         if component.name == "VEVENT":
             if type(component.get("dtstart").dt) is date:
-                print("skipping")
                 continue
             event_params["name"] = component.get("summary")
             event_params["start_time"] = (
@@ -80,6 +80,8 @@ def parse_ics_file(ics_file, user_id):
                 )
                 + timedelta(hours=5)
             ).strftime(STRF)
+            if event_params["start_time"] < start_point:
+                continue
             event_params["end_time"] = (
                 component.get("dtend").dt.replace(
                     tzinfo=pytz.timezone("America/Chicago")
