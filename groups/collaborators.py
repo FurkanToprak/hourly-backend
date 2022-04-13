@@ -6,7 +6,6 @@ from scheduling.schedule import Schedule
 from events.events_routes import create_event
 from users.user_routes import get_email
 from constants import STRF
-from app import mail
 
 
 CURRENT_TIME = (
@@ -19,7 +18,7 @@ CURRENT_TIME = (
 class Collab:
     """Helper class for collaboration"""
 
-    def __init__(self, user_id_1, user_id_2, name_1, name_2) -> None:
+    def __init__(self, user_id_1, user_id_2, name_1, name_2, mail) -> None:
         self.user_id_1 = user_id_1
         self.user_id_2 = user_id_2
         self.name_1 = name_1
@@ -30,6 +29,7 @@ class Collab:
         self.time_slots_2 = None
         self.start_time = None
         self.end_time = None
+        self.mail = mail
 
     def run(self) -> bool:
         """Class Runner"""
@@ -116,7 +116,7 @@ class Collab:
 
         time = self.start_time.strftime("%B %-m, %Y at %-I:%M %p")
         try:
-            mail.send_message(
+            self.mail.send_message(
                 "h/ourly - Collaborator Found!",
                 sender=os.environ["MAIL_USERNAME"],
                 recipients=[email_1],
@@ -130,7 +130,7 @@ class Collab:
             return False
 
         try:
-            mail.send_message(
+            self.mail.send_message(
                 "h/ourly - Collaborator Found!",
                 sender=os.environ["MAIL_USERNAME"],
                 recipients=[email_2],

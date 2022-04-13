@@ -36,6 +36,11 @@ def join_group(user_id, group_id):
 
     if group_ref.get().exists:
         group_ref.update({"user_ids": firestore.ArrayUnion([user_id])})
+
+        friends = group_ref.get().to_dict()["friends"]
+        friends[user_id] = []
+        group_ref.set({"friends": friends}, merge=True)
+
         return {"success": True}
     else:
         return {"success": False}
@@ -47,9 +52,20 @@ def leave_group(user_id, group_id):
 
     if group_ref.get().exists:
         group_ref.update({"user_ids": firestore.ArrayRemove([user_id])})
+
+        friends = group_ref.get().to_dict()["friends"]
+        friends.pop(user_id, None)
+
+        for user, f_list in friends.items():
+            if user_id in f_list:
+                f_list.remove(user_id)
+                friends[user] = f_list
+
+        group_ref.set({"friends": friends}, merge=True)
+
         return {"success": True}
-    else:
-        return {"success": False}
+
+    return {"success": False}
 
 
 def get_friends_list(group_id, user_id):
@@ -122,10 +138,14 @@ def remove_from_friends_list(group_id, user_id_1, user_id_2):
     return {"success": True}
 
 
-def check_collaborators(group_id, user_id_1, user_id_2, name_1, name_2):
+def check_collaborators(group_id, user_id_1, user_id_2, name_1, name_2, mail):
     """Check if two users can collaborate. If so, make events"""
     collab = Collab(
-        user_id_1=user_id_1, user_id_2=user_id_2, name_1=name_1, name_2=name_2
+        user_id_1=user_id_1,
+        user_id_2=user_id_2,
+        name_1=name_1,
+        name_2=name_2,
+        mail=mail,
     )
 
     if collab.run():

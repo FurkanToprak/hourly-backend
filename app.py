@@ -303,6 +303,7 @@ def check_collaborators():
         name_1=params["name_1"],
         name_2=params["name_2"],
         group_id=params["group_id"],
+        mail=mail,
     )
 
 
