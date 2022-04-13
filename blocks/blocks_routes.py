@@ -79,14 +79,15 @@ def expired_sub_tasks(user_id):
     expired_tasks = []
     task_dict = {}
     for block in blocks:
-        end_time = block["end_time"].astimezone(pytz.timezone("America/Chicago"))
-        if block["type"] == "TASK" and end_time < cur_time:
-            task_id = block["task_id"]
+        if block["type"] == "TASK":
+            end_time = block["end_time"].astimezone(pytz.timezone("America/Chicago"))
+            if end_time < cur_time:
+                task_id = block["task_id"]
 
-            if task_id in task_dict:
-                task_dict[task_id] += float(block["hours"])
-            else:
-                task_dict[task_id] = float(block["hours"])
+                if task_id in task_dict:
+                    task_dict[task_id] += float(block["hours"])
+                else:
+                    task_dict[task_id] = float(block["hours"])
 
     for task_id, hours in task_dict.items():
         task = get_task_by_id(task_id)
@@ -135,5 +136,6 @@ def _merge_blocks(block_list):
 
 
 def utc_to_local(utc_string):
+    """Convert UTC to Local Time"""
     utc_dt = parser.parse(utc_string)
     return utc_dt.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("America/Chicago"))
