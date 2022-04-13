@@ -19,6 +19,7 @@ def create_group(params):
     group_struct["user_ids"] = [params["user_id"]]
     group_struct["name"] = params["name"]
     group_struct["description"] = params["description"]
+    group_struct["friends"][params["user_id"]] = []
 
     database.collection("groups").add(group_struct, group_id)
     return {"success": True}

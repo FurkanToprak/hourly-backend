@@ -150,7 +150,7 @@ def delete_event():
 def upload_ics():
     """Upload ICS file for parsing"""
     if "ics_file" not in request.files:
-        return {"success": False}
+        return {"success": False, "message": "ics_file not in request.files"}
     return events_routes.parse_ics_file(
         ics_file=request.files["ics_file"],
         user_id=request.form["user_id"],
