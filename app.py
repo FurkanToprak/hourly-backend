@@ -149,10 +149,10 @@ def delete_event():
 @app.route("/events/uploadICS", methods=["POST"])
 def upload_ics():
     """Upload ICS file for parsing"""
-    if "file" not in request.files:
+    if "ics_file" not in request.files:
         return {"success": False}
     return events_routes.parse_ics_file(
-        ics_file=request.files["file"],
+        ics_file=request.files["ics_file"],
         user_id=request.form["user_id"],
         start_point=request.form["start_point"],
     )
