@@ -303,6 +303,16 @@ def get_group_tasks():
     return groups_routes.get_group_tasks(group_id=params["group_id"])
 
 
+@app.route("/events/uploadICS", methods=["POST"])
+def upload_ics():
+    """Upload ICS file for parsing"""
+    if "file" not in request.files:
+        return {"success": False}
+    return events_routes.parse_ics_file(
+        ics_file=request.files["file"], user_id=request.form["user_id"]
+    )
+
+
 # Present only for testing purposes
 # Will be called internally
 def send_mail():
