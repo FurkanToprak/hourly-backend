@@ -315,23 +315,6 @@ def get_group_tasks():
     return groups_routes.get_group_tasks(group_id=params["group_id"])
 
 
-# Present only for testing purposes
-# Will be called internally
-def send_mail():
-    """Send Email Function"""
-    params = request.json
-    try:
-        mail.send_message(
-            "Collaborator Found!",
-            sender=os.environ["MAIL_USERNAME"],
-            recipients=[params["email"]],
-            body="We found you a collaborator!",
-        )
-        return {"success": True}
-    except Exception:
-        return {"success": False}
-
-
 @app.route("/")
 def hello_world():
     """Return Hello World"""

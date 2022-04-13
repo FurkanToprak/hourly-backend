@@ -61,6 +61,17 @@ def get_names(user_list):
     return send
 
 
+def get_email(user_id):
+    """Return a list of user's names"""
+    result = database.collection("users").where("id", "==", user_id).get()
+
+    email = ""
+    for item in result:
+        email = item.to_dict()["email"]
+
+    return email
+
+
 def delete_everything(user_id):
     """Delete all tasks, events, and blocks for a user"""
     db_batch = database.batch()

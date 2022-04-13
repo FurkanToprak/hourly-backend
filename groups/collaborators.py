@@ -1,9 +1,12 @@
 """Determine collaborator compatibility"""
 import datetime
+import os
 import pytz
 from scheduling.schedule import Schedule
 from events.events_routes import create_event
+from users.user_routes import get_email
 from constants import STRF
+from app import mail
 
 
 CURRENT_TIME = (
@@ -108,4 +111,36 @@ class Collab:
 
     def send_emails(self):
         """Send users emails with contact information"""
+        email_1 = get_email(self.user_id_1)
+        email_2 = get_email(self.user_id_2)
+
+        time = self.start_time.strftime("%B %-m, %Y at %-I:%M %p")
+        try:
+            mail.send_message(
+                "h/ourly - Collaborator Found!",
+                sender=os.environ["MAIL_USERNAME"],
+                recipients=[email_1],
+                body=f"We found you a collaborator!\n \
+                       Collaborator's Name: {self.name_2}\n \
+                       Collaborator's Email: {email_2}\n \
+                       Meeting Time: {time}\n\n \
+                       Be sure to send your collaborator an email and finalize your meeting!",
+            )
+        except Exception:
+            return False
+
+        try:
+            mail.send_message(
+                "h/ourly - Collaborator Found!",
+                sender=os.environ["MAIL_USERNAME"],
+                recipients=[email_2],
+                body=f"We found you a collaborator!\n \
+                       Collaborator's Name: {self.name_1}\n \
+                       Collaborator's Email: {email_1}\n \
+                       Meeting Time: {time}\n\n \
+                       Be sure to send your collaborator an email and finalize your meeting!",
+            )
+        except Exception:
+            return False
+
         return True
