@@ -200,7 +200,6 @@ class Schedule:
                 pl_list[5].append(item)
 
         while self._choose_pl_list(pl_list) != -1:
-            pl_index = self._choose_pl_list(pl_list)
             for i in range(self.num_days):
                 date = self._ceil_dt(
                     CURRENT_TIME, datetime.timedelta(minutes=30)
@@ -208,23 +207,16 @@ class Schedule:
                 day = self.time_slots[date.date()]
                 written_task = ""
                 for j in range(len(day)):
+                    pl_index = self._choose_pl_list(pl_list)
                     if day[j] == (None, None):
                         if len(pl_list[pl_index]) > 0:
                             pop_idx = 0
-                            if (
-                                pl_list[pl_index][0][1]["id"] == written_task
-                                and pl_index != 0
-                            ):
-                                if pl_index == 0 or not self._same_task_in_sub_list(
-                                    pl_list[pl_index]
-                                ):
+                            if pl_index != 0:
+                                if self._same_task_in_sub_list(pl_list[pl_index]):
                                     for idx, item in enumerate(pl_list[pl_index]):
-                                        if (
-                                            item[1]["id"]
-                                            != pl_list[pl_index][0][1]["id"]
-                                            or pl_index == 0
-                                        ):
+                                        if item[1]["id"] == written_task:
                                             pop_idx = idx
+                                            break
                             written_task = pl_list[pl_index].pop(pop_idx)
                             day[j] = ("TASK", written_task[1])
                             written_task = written_task[1]["id"]
@@ -252,7 +244,7 @@ class Schedule:
         pl_list = [[], [], [], [], [], []]
         for item in sub_tasks_list:
             due_date = self._utc_to_local(item[1]["due_date"]).date()
-            if due_date <= cur_day.date():
+            if due_date - cur_day.date() <= datetime.timedelta(0):
                 pl_list[0].append(item)
             elif item[0] > 4:
                 pl_list[1].append(item)
