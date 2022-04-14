@@ -64,13 +64,22 @@ def update_sleep():
     return user_routes.update_sleep(user_id, start_day, end_day)
 
 
-@app.route("/users/deleteEverything", methods=["POST"])
-def delete_everything():
+@app.route("/users/deleteForUser", methods=["POST"])
+def delete_for_user():
     """Delete all of a user's blocks, tasks, and events"""
     params = request.json
     user_id = params["user_id"]
 
-    return user_routes.delete_everything(user_id=user_id)
+    return user_routes.delete_for_user(user_id=user_id)
+
+
+@app.route("/users/deleteCollections", methods=["POST"])
+def delete_collections():
+    """Delete all of a user's blocks, tasks, and events"""
+    params = request.json
+    collection_list = params["collections_list"]
+
+    return user_routes.delete_collections(collection_list=collection_list)
 
 
 @app.route("/tasks/createTask", methods=["POST"])

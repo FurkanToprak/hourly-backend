@@ -72,7 +72,7 @@ def get_email(user_id):
     return email
 
 
-def delete_everything(user_id):
+def delete_for_user(user_id):
     """Delete all tasks, events, and blocks for a user"""
     db_batch = database.batch()
     result = (
@@ -88,6 +88,35 @@ def delete_everything(user_id):
     result = database.collection("events").where("user_id", "==", user_id).get()
     for item in result:
         db_batch.delete(item.reference)
+
+    db_batch.commit()
+
+    return {"success": True}
+
+
+def delete_collections(collection_list):
+    """Delete all tasks, events, and blocks for a user"""
+    db_batch = database.batch()
+
+    if "blocks" in collection_list:
+        result = database.collection("blocks").get()
+        for item in result:
+            db_batch.delete(item.reference)
+
+    if "events" in collection_list:
+        result = database.collection("events").get()
+        for item in result:
+            db_batch.delete(item.reference)
+
+    if "groups" in collection_list:
+        result = database.collection("groups").get()
+        for item in result:
+            db_batch.delete(item.reference)
+
+    if "tasks" in collection_list:
+        result = database.collection("tasks").get()
+        for item in result:
+            db_batch.delete(item.reference)
 
     db_batch.commit()
 
