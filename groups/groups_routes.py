@@ -88,15 +88,15 @@ def get_friends_list(group_id, user_id):
         if user in friends:
             if user_id in friends[user]:
                 friend_dict["mutual"].append(user)
-        else:
-            friend_dict["awaiting_their_response"].append(user)
+            else:
+                friend_dict["awaiting_their_response"].append(user)
 
     for user, f_list in friends.items():
         if user != user_id:
             if user_id in f_list:
                 if user not in friend_dict["mutual"]:
                     friend_dict["awaiting_your_response"].append(user)
-            else:
+            elif user not in friend_dict["awaiting_their_response"]:
                 friend_dict["no_relation"].append(user)
 
     for name, users in friend_dict.items():
@@ -132,6 +132,9 @@ def remove_from_friends_list(group_id, user_id_1, user_id_2):
     if user_id_1 in friends:
         if user_id_2 in friends[user_id_1]:
             friends[user_id_1].remove(user_id_2)
+    if user_id_2 in friends:
+        if user_id_1 in friends[user_id_2]:
+            friends[user_id_2].remove(user_id_1)
 
     database.collection("groups").document(group_id).set(
         {"friends": friends}, merge=True
