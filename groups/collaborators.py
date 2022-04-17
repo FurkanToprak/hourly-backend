@@ -127,7 +127,7 @@ class Collab:
                        Be sure to send your collaborator an email and finalize your meeting!",
             )
         except Exception:
-            return False
+            print("Mail 1 Failed to Send")
 
         try:
             self.mail.send_message(
@@ -141,6 +141,6 @@ class Collab:
                        Be sure to send your collaborator an email and finalize your meeting!",
             )
         except Exception:
-            return False
+            print("Mail 2 Failed to Send")
 
         return True
