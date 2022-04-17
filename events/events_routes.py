@@ -80,7 +80,7 @@ def parse_ics_file(ics_file, user_id, start_point):
                 )
                 + timedelta(hours=5)
             ).strftime(STRF)
-            if event_params["start_time"] < start_point:
+            if utc_to_local(event_params["start_time"]) < start_point:
                 continue
             event_params["end_time"] = (
                 component.get("dtend").dt.replace(
