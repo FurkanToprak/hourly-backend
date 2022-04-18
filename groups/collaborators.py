@@ -114,7 +114,7 @@ class Collab:
         email_1 = get_email(self.user_id_1)
         email_2 = get_email(self.user_id_2)
 
-        time = self.start_time.strftime("%B %-m, %Y at %-I:%M %p")
+        time = self.start_time.strftime("%B %-d, %Y at %-I:%M %p")
         try:
             self.mail.send_message(
                 "h/ourly - Collaborator Found!",
