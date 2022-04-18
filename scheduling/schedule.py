@@ -475,6 +475,22 @@ class Schedule:
     def _ceil_dt(self, d_t, delta):
         return d_t + (datetime.datetime.min.replace(tzinfo=TIME_ZONE) - d_t) % delta
 
+    def _ceil_dt_fix(self, d_t):
+        if d_t.minute < 30:
+            return d_t + datetime.timedelta(minutes=(30 - d_t.minute))
+        elif d_t.minute > 30:
+            return d_t + datetime.timedelta(minutes=(60 - d_t.minute))
+
+        return d_t
+
+    def _floor_dt_fix(self, d_t):
+        if d_t.minute < 30:
+            return d_t - datetime.timedelta(minutes=(d_t.minute))
+        elif d_t.minute > 30:
+            return d_t - datetime.timedelta(minutes=(30 - d_t.minute))
+
+        return d_t
+
     def _choose_pl_list(self, pl_list):
         empty_list_count = 0
         for i in range(len(pl_list)):
