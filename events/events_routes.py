@@ -22,6 +22,9 @@ def create_event(params):
     event["end_time"] = params["end_time"]
     event["repeat"] = params["repeat"]
 
+    if "collab" in params:
+        event["collab"] = "true"
+
     database.collection("events").add(event, event_id)
     return {"success": True}
 

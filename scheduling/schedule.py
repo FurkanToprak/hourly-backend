@@ -333,7 +333,10 @@ class Schedule:
             for event in event_list:
                 block = Block().structure()
                 block["user_ids"] = [self.user_id]
-                block["type"] = "EVENT"
+                if "collab" in event:
+                    block["type"] = "COLLAB"
+                else:
+                    block["type"] = "EVENT"
                 block["name"] = event["name"]
                 block["start_time"] = event["start_time"]
                 block["end_time"] = event["end_time"]

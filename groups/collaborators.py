@@ -97,6 +97,7 @@ class Collab:
             "start_time": self.start_time.strftime(STRF),
             "end_time": self.end_time.strftime(STRF),
             "repeat": "",
+            "collab": "true",
         }
         create_event(params=params_1)
 
@@ -106,6 +107,7 @@ class Collab:
             "start_time": self.start_time.strftime(STRF),
             "end_time": self.end_time.strftime(STRF),
             "repeat": "",
+            "collab": "true",
         }
         create_event(params=params_2)
 
