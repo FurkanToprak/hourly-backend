@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 from datetime import datetime, timezone
 from dateutil import parser
 import pytz
-from tasks.tasks_routes import get_task_by_id
+from tasks.tasks_routes import get_task_by_id, delete_task
 from blocks.models import Block
 from db_connection import database
 
@@ -94,7 +94,17 @@ def expired_sub_tasks(user_id):
         task["hours"] = hours
         expired_tasks.append(task)
 
-    return {"expired_tasks": expired_tasks}
+    past_due_tasks = []
+    for task in expired_tasks:
+        if utc_to_local(task["due_date"]) < get_cur_time():
+            past_due_tasks.append(task)
+
+    for task in past_due_tasks:
+        delete_task(task["id"])
+        if task in expired_tasks:
+            expired_tasks.remove(task)
+
+    return {"expired_tasks": expired_tasks, "past_due_tasks": past_due_tasks}
 
 
 def _merge_blocks(block_list):
@@ -139,3 +149,11 @@ def utc_to_local(utc_string):
     """Convert UTC to Local Time"""
     utc_dt = parser.parse(utc_string)
     return utc_dt.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("America/Chicago"))
+
+
+def get_cur_time():
+    return (
+        datetime.datetime.now(datetime.timezone.utc)
+        .replace(tzinfo=pytz.utc)
+        .astimezone(pytz.timezone("America/Chicago"))
+    )
