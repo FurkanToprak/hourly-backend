@@ -82,6 +82,7 @@ def expired_sub_tasks(user_id):
         if block["type"] == "TASK":
             end_time = block["end_time"].astimezone(pytz.timezone("America/Chicago"))
             if end_time < cur_time:
+                print("End Time Less")
                 task_id = block["task_id"]
 
                 if task_id in task_dict:
@@ -91,20 +92,28 @@ def expired_sub_tasks(user_id):
 
     for task_id, hours in task_dict.items():
         task = get_task_by_id(task_id)
-        task["hours"] = hours
-        expired_tasks.append(task)
+        if task:
+            task["hours"] = hours
+            expired_tasks.append(task)
 
-    past_due_tasks = []
-    for task in expired_tasks:
-        if utc_to_local(task["due_date"]) < get_cur_time():
-            past_due_tasks.append(task)
+    expired_task_list = [
+        task for task in expired_tasks if utc_to_local(task["due_date"]) >= cur_time
+    ]
+    past_due_tasks = [
+        task for task in expired_tasks if utc_to_local(task["due_date"]) < cur_time
+    ]
 
+    id_list = []
     for task in past_due_tasks:
-        delete_task(task["id"])
-        if task in expired_tasks:
-            expired_tasks.remove(task)
+        id_list.append(task["id"])
+    if id_list:
+        result = database.collection("tasks").where("id", "in", id_list).get()
+        db_batch = database.batch()
+        for item in result:
+            db_batch.delete(item.reference)
+        db_batch.commit()
 
-    return {"expired_tasks": expired_tasks, "past_due_tasks": past_due_tasks}
+    return {"expired_tasks": expired_task_list, "past_due_tasks": past_due_tasks}
 
 
 def _merge_blocks(block_list):
@@ -153,7 +162,7 @@ def utc_to_local(utc_string):
 
 def get_cur_time():
     return (
-        datetime.datetime.now(datetime.timezone.utc)
+        datetime.now(timezone.utc)
         .replace(tzinfo=pytz.utc)
         .astimezone(pytz.timezone("America/Chicago"))
     )
