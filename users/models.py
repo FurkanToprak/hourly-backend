@@ -7,5 +7,12 @@ class User:
     @staticmethod
     def structure():
         """Creating a user object"""
-        user = {"name": "", "email": "", "id": "", "startOfDay": "", "endOfDay": ""}
+        user = {
+            "name": "",
+            "email": "",
+            "id": "",
+            "startOfDay": "",
+            "endOfDay": "",
+            "refresh_schedule": "",
+        }
         return user

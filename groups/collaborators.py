@@ -4,7 +4,7 @@ import os
 import pytz
 from scheduling.schedule import Schedule
 from events.events_routes import create_event
-from users.user_routes import get_email
+from users.user_routes import get_email, update_refresh_schedule
 from constants import STRF
 
 
@@ -110,6 +110,7 @@ class Collab:
             "collab": "true",
         }
         create_event(params=params_2)
+        update_refresh_schedule(user_id=self.user_id_2, refresh=True)
 
     def send_emails(self):
         """Send users emails with contact information"""

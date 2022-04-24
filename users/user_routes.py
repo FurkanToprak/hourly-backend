@@ -10,10 +10,16 @@ def login(email, name, start_day, end_day):
     result = database.collection("users").where("email", "==", email).get()
     if result:
         user_match = result[0].to_dict()
+        refresh = False
+        if user_match["refresh_schedule"]:
+            refresh = True
+            update_refresh_schedule(user_id=user_match["id"], refresh=False)
+
         send = {
             "id": user_match["id"],
             "startOfDay": user_match["startOfDay"],
             "endOfDay": user_match["endOfDay"],
+            "refresh_schedule": refresh,
         }
     else:
         doc_ref = database.collection("users").document()
@@ -24,6 +30,7 @@ def login(email, name, start_day, end_day):
         user["name"] = name
         user["startOfDay"] = start_day
         user["endOfDay"] = end_day
+        user["refresh_schedule"] = False
         database.collection("users").add(user, doc_id)
         send = {"id": doc_id, "startOfDay": start_day, "endOfDay": end_day}
     return jsonify(send)
@@ -70,6 +77,13 @@ def get_email(user_id):
         email = item.to_dict()["email"]
 
     return email
+
+
+def update_refresh_schedule(user_id, refresh):
+    """Set refresh_schedule"""
+    result = database.collection("users").document(user_id)
+    if result.get().exists:
+        result.update({"refresh_schedule": refresh})
 
 
 def delete_for_user(user_id):
