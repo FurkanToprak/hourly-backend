@@ -9,7 +9,6 @@ from events import events_routes
 from blocks.models import Block
 from blocks.blocks_routes import delete_blocks
 from db_connection import database
-from constants import NOT_COMPLETED
 
 TIME_UNIT = 30
 UNITS_PER_DAY = int((24 * 60 / TIME_UNIT))
