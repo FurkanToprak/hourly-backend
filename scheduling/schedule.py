@@ -164,7 +164,9 @@ class Schedule:
         pl_list = [[], [], [], [], [], []]
         sub_tasks_list = []
         for task in self.tasks:
-            num_sub_tasks = float(task["estimated_time"]) / float(TIME_UNIT / 60)
+            num_sub_tasks = (
+                float(task["estimated_time"]) - float(task["completed_time"])
+            ) / float(TIME_UNIT / 60)
             priority = self.generate_priority(
                 task["estimated_time"],
                 task["completed_time"],
