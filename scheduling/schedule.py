@@ -347,6 +347,7 @@ class Schedule:
         for task in self.cram_tasks:
             block = Block().structure()
             block["user_ids"] = [self.user_id]
+            block["task_id"] = task["id"]
             block["type"] = "CRAM"
             block["name"] = task["name"]
             block["start_time"] = self._ceil_dt(
