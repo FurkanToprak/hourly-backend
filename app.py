@@ -311,7 +311,6 @@ def check_collaborators():
         user_id_2=params["user_id_2"],
         name_1=params["name_1"],
         name_2=params["name_2"],
-        group_id=params["group_id"],
         mail=mail,
     )
 

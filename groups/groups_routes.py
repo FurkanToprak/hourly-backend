@@ -142,7 +142,7 @@ def remove_from_friends_list(group_id, user_id_1, user_id_2):
     return {"success": True}
 
 
-def check_collaborators(group_id, user_id_1, user_id_2, name_1, name_2, mail):
+def check_collaborators(user_id_1, user_id_2, name_1, name_2, mail):
     """Check if two users can collaborate. If so, make events"""
     collab = Collab(
         user_id_1=user_id_1,
@@ -153,14 +153,6 @@ def check_collaborators(group_id, user_id_1, user_id_2, name_1, name_2, mail):
     )
 
     if collab.run():
-        group_ref = database.collection("groups").document(group_id)
-        group_ref.update(
-            {
-                "collaborators": firestore.ArrayRemove(
-                    [{"user_id": user_id_1, "user_name": name_1}]
-                )
-            }
-        )
         start_time = collab.start_time
         end_time = collab.end_time
         return {
