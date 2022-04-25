@@ -132,7 +132,7 @@ class Schedule:
 
         # Write sleep until current time to prevent tasks being scheduled in the past
         today = CURRENT_TIME.date()
-        cur_time_rounded = self._ceil_dt(CURRENT_TIME, datetime.timedelta(minutes=30))
+        cur_time_rounded = self._ceil_dt_fix(CURRENT_TIME)
         begin_day = (cur_time_rounded.hour * 60 + cur_time_rounded.minute) / TIME_UNIT
 
         for i in range(1, int(begin_day) + 1):
