@@ -382,9 +382,7 @@ class Schedule:
         for event in event_list:
             start_time = self._utc_to_local(event["start_time"])
             end_time = self._utc_to_local(event["end_time"])
-            start_units, end_units = self._dt_to_units(
-                self._floor_dt_fix(start_time), self._ceil_dt_fix(end_time)
-            )
+            start_units, end_units = self._dt_to_units(start_time, end_time)
             event["start_units"] = start_units
             event["end_units"] = end_units
 
@@ -397,9 +395,7 @@ class Schedule:
         for event in repeat_event_list:
             start_time = self._utc_to_local(event["start_time"])
             end_time = self._utc_to_local(event["end_time"])
-            start_units, end_units = self._dt_to_units(
-                self._floor_dt_fix(start_time), self._ceil_dt_fix(end_time)
-            )
+            start_units, end_units = self._dt_to_units(start_time, end_time)
             event["start_units"] = start_units
             event["end_units"] = end_units
 
